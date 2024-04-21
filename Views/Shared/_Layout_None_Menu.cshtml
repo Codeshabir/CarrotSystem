@@ -1,0 +1,163 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Production System</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="~/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="~/css/ionicons.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/buttons.bootstrap.min.css">
+    <!-- bootstrap slider -->
+    <link rel="stylesheet" href="~/css/slider.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="~/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="~/css/treeview.css">
+    <link rel="stylesheet" href="~/css/switchbox.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/css/pure-css/tables.css">
+    <!-- Select Option -->
+    <link rel="stylesheet" href="~/css/selectOption.css">
+    <!-- Pace style -->
+    <link rel="stylesheet" href="~/css/pace.min.css">
+    <link rel="stylesheet" href="~/css/loading.css">
+    <link rel="stylesheet" href="~/css/loader.css">
+    <!--<link rel="stylesheet" href="~/dist/css/pace.css">-->
+    <!-- Morris chart -->
+    <link rel="stylesheet" href="~/css/morris.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="~/css/jquery-jvectormap.css">
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link rel="stylesheet" href="~/css/icheckall.css">
+    <!-- Date Picker -->
+    <link rel="stylesheet" href="~/css/bootstrap-datepicker.min.css">
+    <!-- Daterange picker -->
+    <link rel="stylesheet" href="~/css/daterangepicker.css">
+    <!-- bootstrap wysihtml5 - text editor -->
+    <!--<link rel="stylesheet" href="~/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">-->
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/css/select2.min.css">
+
+    <!-- Favicon and Icon-->
+    <link rel="apple-touch-icon" sizes="57x57" href="~/images/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="~/images/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="~/images/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="~/images/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="~/images/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="~/images/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="~/images/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="~/images/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="~/images/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="~/images/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="~/images/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/images/icons/favicon-16x16.png">
+    <link rel="manifest" href="~/images/icons/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="~/images/icons/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="shortcut icon" href="~/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="~/images/favicon.ico" type="image/x-icon">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+</head>
+<body class="hold-transition skin-yellow layout-top-nav">
+    <div class="wrapper">
+
+        <header class="main-header">
+            <nav class="navbar navbar-static-top">
+                <div class="container">
+                    <div class="navbar-header pull-left">
+                        <a href="/Sales/SalesList" class="navbar-brand" style="margin-right:25px;"><b>CS</b></a>
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                        
+                    </div>
+                    <!-- User menu -->
+                    <div class="col-sm-3 collapse navbar-collapse pull-right" id="navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="dropdown user user-menu">
+
+                            </li>
+                            <li>
+                                <a id="logOutBtn" href="/Identity/Accounts/Logout"><i class="fa fa-sign-out"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- /.container-fluid -->
+            </nav>
+        </header>
+
+        <!-- Script Loading -->
+        <!-- jQuery 3 -->
+        <script src="~/js/jquery.min.js"></script>
+        <!-- Bootstrap 3.3.7 -->
+        <script src="~/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="~/js/js/jquery.dataTables.min.js"></script>
+        <script src="~/js/js/dataTables.bootstrap.min.js"></script>
+        <!-- SlimScroll -->
+        <script src="~/js/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="~/js/fastclick.js"></script>
+        <!-- Application js -->
+        <script src="~/js/adminlte.min.js"></script>
+        <script src="~/js/treeview.js"></script>
+        <script src="~/js/menuactive.js"></script>
+        <script src="~/js/sweetalert.min.js"></script>
+        <!-- PACE -->
+        <script src="~/js/pace.min.js"></script>
+
+        <!-- /Script Loading -->
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+        <!-- /Content Wrapper
+
+        <footer class="main-footer no-print">
+            <strong>Copyright &copy; 2019 Mercorella Group</strong> All rights reserved.
+        </footer>
+         -->
+    </div>
+    <!-- ./wrapper -->
+    <!-- Main Script -->
+    <script>
+
+        $(document).ajaxStart(function () {
+            Pace.restart()
+        });
+
+        //Loading Page
+        $(function () {
+            $("#loadingPage").fadeOut();
+        });
+    </script>
+</body>
+</html>

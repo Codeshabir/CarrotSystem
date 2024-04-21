@@ -1,0 +1,33 @@
+﻿@model CarrotSystem.Models.ViewModel.DispatchViewModel
+
+@{
+    Layout = null;
+}
+
+@if (Model.dispatchList.Count > 0)
+{
+    @foreach(var dis in Model.dispatchList)
+    {
+        <tr>
+            <td class="col-sm-8" OnClick="GetDispatchDetails('@dis.DispatchId');">@dis.DispatchId</td>
+            @if(!Model.isClosed)
+            {
+                <td class="col-sm-2">
+                    <button type="button" class="btn btn-icon btn-danger" OnClick="DeleteModel('Dispatch', '@dis.DispatchId');">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+
+
+            }
+        </tr>
+    }
+}
+else
+{
+    <tr>
+       <td></td>
+    </tr>
+}
+
+

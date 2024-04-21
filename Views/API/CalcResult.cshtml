@@ -1,0 +1,199 @@
+﻿@model CarrotSystem.Models.ViewModel.CalcViewModel
+
+@{
+    ViewBag.Title = "Calc Result";
+    Layout = "_Layout";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1></h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Calc Result</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <table id="dataTable" class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>PeriodID</th>
+                                <th>ProductCode</th>
+                                <th>Opening</th>
+                                <th>Opening<br/>Value</th>
+                                <th>Purchased</th>
+                                <th>pClaimed</th>
+                                <th>rClaimed</th>
+                                <th>Sold</th>
+                                <th>sClaimed</th>
+                                <th>ucWasted</th>
+                                <th>TransFrom</th>
+                                <th>TransTo</th>
+                                <th>PackUsed</th>
+                                <th>Packed</th>
+                                <th>Calculated</th>
+                                <th>StockCount</th>
+                                <th>Variance</th>
+                                <th>Closing</th>
+                                <th>Added</th>
+                                <th>Added<br/>Value</th>
+                                <th>Packed<br/>Value</th>
+                                <th>Reduction</th>
+                                <th>Reduction<br/>Value</th>
+                                <th>Closing<br/>Value</th>
+                                <th>pClaimed<br/>Value</th>
+                                <th>PackSOLD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.invenList)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.PeriodId
+                                    </td>
+                                    <td>
+                                        @if(!string.IsNullOrEmpty(item.ProductCode))
+                                        {
+                                            @item.ProductCode
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.Opening > 0)
+                                        {
+                                            @item.Opening
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.OpeningValue > 0)
+                                        {
+                                            @item.OpeningValue
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.Purchased > 0)
+                                        {
+                                            @item.Purchased
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.PClaimed > 0)
+                                        {
+                                            @item.PClaimed
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.RClaimed > 0)
+                                        {
+                                            @item.RClaimed
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.Sold > 0)
+                                        {
+                                            @item.Sold
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.SClaimed > 0)
+                                        {
+                                            @item.SClaimed
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.UcWasted > 0)
+                                        {
+                                            @item.UcWasted
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.TransFrom > 0)
+                                        {
+                                            @item.TransFrom
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.TransTo > 0)
+                                        {
+                                            @item.TransTo
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.PackUsed > 0)
+                                        {
+                                            @item.PackUsed
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(item.Packed > 0)
+                                        {
+                                            @item.Packed
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer text-center">
+                </div>
+                <!-- /.box-footer-->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+
+</section>
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+<script src="~/js/dataTables.buttons.js"></script>
+<script src="~/js/buttons.bootstrap.min.js"></script>
+<script src="~/js/jszip.min.js"></script>
+<script src="~/js/pdfmake.min.js"></script>
+<script src="~/js/vfs_fonts.js"></script>
+<script src="~/js/buttons.print.min.js"></script>
+<script src="~/js/buttons.colVis.min.js"></script>
+<script src="~/js/buttons.html5.js"></script>
+<script src="~/js/dataTables.rowGroup.min.js"></script>
+<!-- bootstrap time picker -->
+<script src="~/js/bootstrap-timepicker.js"></script>
+<!-- bootstrap datepicker -->
+<script src="~/js/bootstrap-datepicker.min.js"></script>
+<script src="~/js/numeric-comma.js"></script>
+<!-- Data Moment Function -->
+<script src="~/js/moment.min.js"></script>
+<script src="~/js/datetime-moment.js"></script>
+
+
+<script>
+//Menu Active
+MenuActive("","Users","UsersList");
+
+//Loading Page
+$(function () {
+    $("#loadingPage").fadeOut();
+});
+
+//DataTable Configuration
+$('#dataTable').DataTable({
+    'paging': true,
+    'lengthChange': false,
+    'pageLength': 50,
+    'searching': true,
+    'ordering': true,
+    'info': false,
+    'autoWidth': false,
+    "order": [[0, 'asc']]
+});
+
+</script>

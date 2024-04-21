@@ -1,0 +1,936 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewProduct
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = Model.pageTitle + " Product";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card"> 
+            <div class="card-body" style="padding-bottom: 16px; padding-top: 3px;">
+                  <div class="demo-inline-spacing">
+                    <a class="btn rounded-pill btn-label-primary" asp-action="ProductsDetails" asp-route-id="New">New Product</a>
+                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="SaveProfile();">Save</button>
+                    <a class="btn rounded-pill btn-label-primary" href="/Definitions/ProductList">Close</a>
+                  </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mt-4">
+
+    <div class="col-xl-12">
+        <div class="nav-align-top mb-4">
+            <ul class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button type="button" onclick="ChangePage('Profile')" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-profile" aria-controls="navs-pills-top-home" aria-selected="true">
+                        Profile
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" onclick="ChangePage('Recipe')" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-recipe" aria-controls="navs-pills-top-profile" aria-selected="false" tabindex="-1">
+                        Recipe
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="navs-pills-profile" role="tabpanel">
+                    <form id="productProfile" asp-action="SaveProduct" asp-controller="Definitions" method="POST">
+
+                        @if (Model.isNew)
+                        {
+                            <input type="hidden" id="productId" value="0" asp-for="productDetailView.ProductId" />
+                        }
+                        else
+                        {
+                            <input type="hidden" id="productId" value="@Model.productDetailView.ProductId" asp-for="productDetailView.ProductId" />
+                        }
+
+                        <div class="row mb-3">
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Main Group</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <select class="form-select" id="MainGroup" asp-for="productDetailView.MainGroupId" onchange="GetSubGroupList(this.value);">
+                                                <option value=""></option>
+                                                @foreach (var item in Model.mainGroupList)
+                                                {
+                                                    <option value="@item.Id">@item.Type</option>
+                                                }
+                                                <option value="New">New</option>
+                                            </select>
+
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="MainGroup" asp-for="productDetailView.MainGroupId" onchange="GetSubGroupList(this.value);">
+                                                <option value="@Model.productDetailView.MainGroupId">@Model.productDetailView.MainGroup</option>
+                                                @foreach (var item in Model.mainGroupList.Where(w => !w.Id.Equals(Model.productDetailView.MainGroupId)).ToList())
+                                                {
+                                                    <option value="@item.Id">@item.Type</option>
+                                                }
+                                                <option value="New">New</option>
+                                            </select>
+                                        }
+                                        <div class="input-group-addon">
+                                            <button type="button" onclick="DeleteGroup('Main');" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Sub Group</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <select class="form-select" id="SubGroup" asp-for="productDetailView.SubGroupId" onchange="GetMinorGroupList(this.value);">
+                                                <option value=""></option>
+                                                <option value="New">New</option>
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="SubGroup" asp-for="productDetailView.SubGroupId" onchange="GetMinorGroupList(this.value);">
+                                                <option value="@Model.productDetailView.SubGroupId">@Model.productDetailView.SubGroup</option>
+                                                @foreach (var item in Model.subGroupList.Where(w => !w.Id.Equals(Model.productDetailView.SubGroupId)).ToList())
+                                                {
+                                                    <option value="@item.Id">@item.Type</option>
+                                                }
+                                                <option value="New">New</option>
+                                            </select>
+                                        }
+
+                                        <button type="button" onclick="DeleteGroup('Sub');" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label text-right">Minor Group</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <select class="form-select" id="MinorGroup" asp-for="productDetailView.MinorGroupId" onchange="GetProductDetails(this.value);">
+                                                <option value=""></option>
+                                                <option value="New">New</option>
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="MinorGroup" asp-for="productDetailView.MinorGroupId" onchange="GetProductDetails(this.value);">
+                                                <option value="@Model.productDetailView.MinorGroupId">@Model.productDetailView.MinorGroup</option>
+                                                @foreach (var item in Model.minorGroupList.Where(w => !w.Id.Equals(Model.productDetailView.MinorGroupId)).ToList())
+                                                {
+                                                    <option value="@item.Id">@item.Type</option>
+                                                }
+                                                <option value="New">New</option>
+                                            </select>
+                                        }
+
+                                        <button type="button" onclick="DeleteGroup('Minor');" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Prefix</label>
+                                    <div class="col-sm-3 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <input type="text" id="PrefixDisplay" class="form-control" Onchange="UpdatePrefix(this.value, @Model.productDetailView.MinorGroupId);" />
+                                            <input type="hidden" id="Prefix" class="form-control" value="" asp-for="productDetailView.Prefix" />
+                                        }
+                                        else
+                                        {
+                                            <input type="text" id="PrefixDisplay" class="form-control" value="@Model.productDetailView.Prefix" Onchange="UpdatePrefix(this.value, @Model.productDetailView.MinorGroupId);" />
+                                            <input type="hidden" id="Prefix" class="form-control" value="@Model.productDetailView.Prefix" asp-for="productDetailView.Prefix" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                         </div>
+
+                         <div class="row">
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Suffix</label>
+                                    <div class="col-sm-3 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <input type="text" id="Suffix" class="form-control" asp-for="productDetailView.Suffix" OnChange="MakeCode(this.value);" />
+                                        }
+                                        else
+                                        {
+                                            <input type="text" id="Suffix" class="form-control" value="@Model.productDetailView.Suffix" asp-for="productDetailView.Suffix" disabled />
+                                        }
+                                    </div>
+                                </div>
+                             </div>
+                             <div class="col-md-3">
+                                 <div class="form-group">
+                                <label class="col-sm-3 control-label text-right">Code</label>
+                                <div class="col-sm-3 input-group">
+                                    @if (Model.isNew)
+                                    {
+                                        <input type="text" id="ProductCodeDisplay" class="form-control" disabled />
+                                        <input type="hidden" id="ProductCode" asp-for="productDetailView.Code" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" id="ProductCodeDisplay" class="form-control" value="@Model.productDetailView.Code" disabled />
+                                        <input type="hidden" id="ProductCode" value="@Model.productDetailView.Code" asp-for="productDetailView.Code" />
+                                    }
+                                </div>
+                            </div>
+                             </div>
+                             <div class="col-md-3">
+                                 <div class="form-group">
+                                <label class="col-sm-3 control-label text-right">Description</label>
+                                <div class="col-sm-3 input-group">
+                                    @if (Model.isNew)
+                                    {
+                                        <input type="text" id="ProductDesc" class="form-control" placeholder="" asp-for="productDetailView.Desc" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" id="ProductDesc" class="form-control" placeholder="" value="@Model.productDetailView.Desc" asp-for="productDetailView.Desc" />
+                                    }
+                                </div>
+                            </div>
+                             </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Active</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <label class="switch switch-lg mt-4">
+                                                <input type="checkbox" class="switch-input" onchange="ToggleShowAll(this.checked);" checked />
+                                                <span class="switch-toggle-slider">
+                                                    <span class="switch-on"></span>
+                                                    <span class="switch-off"></span>
+                                                </span>
+                                            </label>
+
+                                            <input type="hidden" value="true" id="proActive" asp-for="productDetailView.Active" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.productDetailView.Active)
+                                            {
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" id="Active" onchange="ToggleShowAll(this.checked);" />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span>
+                                                </label>
+
+                                                <input type="hidden" value="true" id="proActive" asp-for="productDetailView.Active" />
+                                            }
+                                            else
+                                            {
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" id="Active" onchange="ToggleShowAll(this.checked);" />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span>
+                                                </label>
+
+                                                <input type="hidden" value="false" id="proActive" asp-for="productDetailView.Active" />
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                             </div>
+                         </div>
+
+                         <div class="row">
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Unit</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <select class="form-select" id="Unit" asp-for="productDetailView.Unit">
+                                                @foreach (var item in Model.unitList.OrderBy(o => o.SortId).ToList())
+                                                {
+                                                    <option value="@item.Type">@item.Type</option>
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="Unit" asp-for="productDetailView.Unit">
+                                                <option value="@Model.productDetailView.Unit">@Model.productDetailView.Unit</option>
+                                                @foreach (var item in Model.unitList.Where(w => (!w.Type.Equals(Model.productDetailView.Unit))).ToList())
+                                                {
+                                                    <option value="@item.Type">@item.Type</option>
+                                                }
+                                            </select>
+                                        }
+                                    </div>
+                                </div>
+                             </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Tax</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <select class="form-select" id="Tax" asp-for="productDetailView.Tax">
+                                                @foreach (var item in Model.taxList.OrderBy(o => o.SortId).ToList())
+                                                {
+                                                    <option value="@item.Code">@item.Code</option>
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="Tax" asp-for="productDetailView.Tax">
+                                                <option value="@Model.productDetailView.Tax">@Model.productDetailView.Tax</option>
+                                                @foreach (var item in Model.taxList.Where(w => !w.Code.Equals(Model.productDetailView.Tax)).ToList())
+                                                {
+                                                    <option value="@item.Code">@item.Code</option>
+                                                }
+                                            </select>
+                                        }
+                                    </div>
+                                </div>
+                             </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label text-right">Comment</label>
+                                    <div class="col-sm-4 input-group">
+                                        @if (Model.isNew)
+                                        {
+                                            <textarea id="Comment" class="form-control" asp-for="productDetailView.Comment"></textarea>
+                                        }
+                                        else
+                                        {
+                                            <textarea id="Comment" class="form-control" value="@Model.productDetailView.Comment" asp-for="productDetailView.Comment"></textarea>
+                                        }
+                                    </div>
+                                </div>
+                             </div>
+                         </div>
+                      
+                       
+                    </form>
+
+                </div>
+                <div class="tab-pane fade" id="navs-pills-top-recipe" role="tabpanel">
+                    <div class="row">
+                        <table id="mercTable" class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Component Code</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Component Desc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Embeded</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Updated By</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Updated On</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.recipeList.Count > 0)
+                                {
+                                    @foreach (var item in Model.recipeList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <select class="form-control" id="compCode_@item.Id" disabled>
+                                                    <option value="@item.Id">@item.ProductCode - @item.Component</option>
+                                                    @foreach (var repItem in Model.recipeItemList.Where(w => !w.Code.Equals(item.ProductCode)).ToList())
+                                                    {
+                                                        <option value="@repItem.ProductId">@repItem.Code - @repItem.Desc</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" id="compDesc_@item.Id" class="form-control" value="@item.Component" disabled />
+                                            </td>
+                                            <td>
+                                                <input type="text" id="recipeQty_@item.Id" class="form-control" value="@item.Qty" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" />
+                                            </td>
+
+                                            @if (item.Embeded.HasValue)
+                                            {
+                                                @if (item.Embeded.Value.Equals(true))
+                                                {
+                                                    <td>
+                                                        <input type="checkbox" class="switch_1" id="embeded_@item.Id" checked />
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>
+                                                        <input type="checkbox" class="switch_1" id="embeded_@item.Id" />
+                                                    </td>
+                                                }
+                                            }
+
+                                            <td>
+                                                <input type="text" class="form-control" value="@item.UpdatedBy" disabled />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" value="@item.UpdatedOn.Value.ToString("dd/MM/yyyy HH:mm")" disabled />
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-default" Onclick="DeleteRecipe(@item.Id)"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+
+                                <tr>
+                                    @if (Model.recipeItemList.Count > 0)
+                                    {
+                                        <td>
+                                            <select class="form-control" id="newRecipeCode" OnChange="CheckRecipeDetails();">
+                                                <option value=""></option>
+                                                @foreach (var item in Model.recipeItemList)
+                                                {
+                                                    <option value="@item.ProductId">@item.Code - @item.Desc</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" id="newRecipeDesc" class="form-control" value="" disabled />
+                                        </td>
+                                        <td>
+                                            <input type="text" id="newRepQty" class="form-control" value="" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" />
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="switch_1" id="newEmbeded" />
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button type="button" class="btn btn-default" Onclick="NewRecipeItem()">Add</button>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<!-- New Group Modal -->
+<div class="modal fade" id="modal-newGroup">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="newGroupDataForm" asp-action="NewGroup" asp-controller="Definitions" method="POST" class="form-horizontal">
+                <div class="modal-header">
+                    <h4 class="modal-title">New Group</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <input type="hidden" asp-for="newGroupType" id="newGroupType" />
+                        <input type="hidden" asp-for="newMainGroupId" id="newMainGroupId" />
+                        <input type="hidden" asp-for="newSubGroupId" id="newSubGroupId" />
+                        <input type="hidden" asp-for="newPrefix" id="newPrefix" />
+                        <input type="hidden" asp-for="productId" id="newGroupProductId" />
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Group Name</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="newGroupName" value="" class="form-control" onKeyup="this.value=this.value.toUpperCase();" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Prefix</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="newPrefix" value="" class="form-control" id="newPrefixForm" onKeyup="this.value=this.value.toUpperCase();" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-default btn-primary text-white" OnClick="NewGroup();">Add</a>
+                    <a class="btn btn-default btn-danger text-white" onclick="CloseGroup()" data-dismiss="modal">Close</a>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal Update-->
+
+<input type="hidden" id="pageType" value="Profile" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Definitions", "ProductList");
+
+        $(document).ready(function () {
+
+            //Data Table
+            $('#dataTable').DataTable({
+                order: [[0, 'asc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 100
+            });
+
+        });
+
+        function CloseGroup()
+        {
+            $('#modal-newGroup').modal('hide');
+        }
+
+        function ChangePage(pageType) 
+        {
+            document.getElementById("pageType").value = pageType;
+        };
+
+        function ToggleActive(active) 
+        {
+            document.getElementById('proActive').value = active;
+        };
+
+        function GetDetails(dataType, dataId) 
+        {
+            
+            $.ajax({
+                type: "POST",
+                url: "/Definitions/GetDetails?content=" + dataType + "&dataId=" + eval(dataId),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) {
+
+                    EmptyShip();
+
+                    document.getElementById('shipName').value = response.addressName;
+                    document.getElementById('shipStreet').value = response.street;
+                    document.getElementById('shipCity').value = response.city;
+                    document.getElementById('shipState').value = response.state;
+
+                    if (response.postCode != null) {
+                        document.getElementById('shipPostCode').value = response.postCode;
+                    }
+
+                    if (response.country != null) {
+                        document.getElementById('shipCountry').value = response.country;
+                    }
+
+                    if (response.contactName != null) {
+                        document.getElementById('shipContact').value = response.contactName;
+                    }
+
+                    if (response.phone1 != null) {
+                        document.getElementById('shipPhone1').value = response.phone1;
+                    }
+
+                    if (response.phone2 != null) {
+                        document.getElementById('shipPhone2').value = response.phone2;
+                    }
+
+                    if (response.fax != null) {
+                        document.getElementById('shipFax').value = response.fax;
+                    }
+
+                    if (response.email != null) {
+                        document.getElementById('shipEmail').value = response.email;
+                    }
+
+                    if (response.www != null) {
+                        document.getElementById('shipWWW').value = response.www;
+                    }
+
+                    if (response.comment != null) {
+                        document.getElementById('shipComment').value = response.comment;
+                    }
+
+                }
+            });
+
+        };
+
+        function CheckRecipeDetails() 
+        {
+            let repProductCode = document.getElementById('newRecipeCode').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Definitions/GetDetails?content=ProductRecipe&dataId=" + repProductCode,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) {
+
+                    document.getElementById('newRecipeDesc').value = response;
+
+                }
+            });
+
+        };
+
+        function DeleteModel(editId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Product?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Definitions/DeleteProduct?productId=" + eval(editId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function DeleteRecipe(editId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Recipe Item?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Definitions/DeleteRecipeItem?recipeId=" + eval(editId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function NewRecipeItem() 
+        {
+            if (ValidRecipeMessages()) {
+                var productId = document.getElementById("productId").value;
+                var repProductId = document.getElementById("newRecipeCode").value;
+                var repQty = document.getElementById("newRepQty").value;
+                var isEmbeded = document.getElementById("newEmbeded").checked;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/AddRecipeItem?productId=" + eval(productId) + "&repProductId=" + repProductId + "&repQty=" + repQty + "&isEmbeded=" + isEmbeded,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        location.reload(true);
+                    }
+                });
+            }
+
+        };
+
+        function MakeCode(suffix) 
+        {
+            var prefix = document.getElementById('Prefix').value;
+
+            var code = prefix + suffix;
+
+            document.getElementById('ProductCode').value = code;
+            document.getElementById('ProductCodeDisplay').value = code;
+
+        };
+
+
+        function SaveProfile() 
+        {
+            if (ValidProfileMessages()) {
+                document.getElementById("productProfile").submit();
+            }
+            else {
+
+            }
+        };
+
+        function NewGroup() 
+        {
+            if (document.getElementById('productId').value == 0) {
+                document.getElementById('newGroupProductId').value = "New";
+            }
+            else {
+                document.getElementById('newGroupProductId').value = document.getElementById('productId').value;
+            }
+
+            document.getElementById('newGroupDataForm').submit();
+        };
+
+
+        function GetSubGroupList(mainGroupId) 
+        {
+            console.log(mainGroupId)
+            if (mainGroupId == "New") {
+                $('#modal-newGroup').modal('show');
+
+                document.getElementById('newPrefixForm').disabled = true;
+                document.getElementById('newGroupType').value = "MainGroup";
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/GetDetails?content=SubGroup&dataId=" + mainGroupId,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        $("#SubGroup option").remove();
+
+                        var str;
+
+                        str += '<option value="" />';
+
+                        for (var i = 0; i < response.length; ++i) {
+                            str += '<option value="' + response[i].id + '">' + response[i].type + '</option>';
+                        }
+
+                        str += '<option value="New">New</option>';
+
+                        document.getElementById("SubGroup").innerHTML = str;
+                    }
+                });
+            }
+
+        };
+
+        function GetMinorGroupList(subGroupId) 
+        {
+            if (subGroupId == "New") {
+                $('#modal-newGroup').modal('show');
+
+                document.getElementById('newPrefixForm').disabled = true;
+                document.getElementById('newGroupType').value = "SubGroup";
+                document.getElementById('newMainGroupId').value = document.getElementById('MainGroup').value;
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/GetDetails?content=MinorGroup&dataId=" + subGroupId,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        $("#MinorGroup option").remove();
+
+                        var str;
+
+                        str += '<option value="" />';
+
+                        for (var i = 0; i < response.length; ++i) {
+                            str += '<option value="' + response[i].id + '">' + response[i].type + '</option>';
+                        }
+
+                        str += '<option value="New">New</option>';
+
+                        document.getElementById("MinorGroup").innerHTML = str;
+                    }
+                });
+            }
+        };
+
+        function GetProductDetails(minorGroupId) 
+        {
+            if (minorGroupId == "New") {
+                $('#modal-newGroup').modal('show');
+
+                document.getElementById('newPrefixForm').disabled = false;
+                document.getElementById('newGroupType').value = "MinorGroup";
+                document.getElementById('newSubGroupId').value = document.getElementById('SubGroup').value;
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/GetDetails?content=ProductDetails&dataId=" + minorGroupId,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) 
+                    {
+                        document.getElementById("Prefix").value = response.prefix;
+                        document.getElementById("PrefixDisplay").value = response.prefix;
+                    }
+                });
+            }
+        };
+
+        function DeleteGroup(groupType) 
+        {
+            let groupId = 0;
+            let groupName = "";
+
+            if (groupType == "Main") {
+                groupId = document.getElementById("MainGroup").value;
+                groupName = document.getElementById("MainGroup").options[document.getElementById("MainGroup").selectedIndex].text;
+            }
+            else if (groupType == "Sub") {
+                groupId = document.getElementById("SubGroup").value;
+                groupName = document.getElementById("SubGroup").options[document.getElementById("SubGroup").selectedIndex].text;
+            }
+            else if (groupType == "Minor") {
+                groupId = document.getElementById("MinorGroup").value;
+                groupName = document.getElementById("MinorGroup").options[document.getElementById("MinorGroup").selectedIndex].text;
+            }
+
+            if (groupId > 0) {
+                Swal.fire({
+                    title: "Do you want to remove " + groupName + " Group?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/Definitions/DeleteGroup?groupType=" + groupType + "&groupId=" + eval(groupId) + "&groupName=" + groupName,
+                                contentType: "application/json",
+                                dataType: "json",
+                                success: function (response) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+
+            }
+        };
+
+
+        function ValidRecipeMessages() 
+        {
+            var returnVal = true;
+
+            if (document.getElementById('newRecipeCode').value == "") {
+                FocusMessages('newRecipeCode', 'Component Code');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newRepQty').value == "") {
+                FocusMessages('newRepQty', 'Qty');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function ValidProfileMessages() 
+        {
+            var returnVal = true;
+
+            if (document.getElementById('MainGroup').value == "") {
+                FocusMessages('MainGroup', 'Main Group');
+                returnVal = false;
+            }
+
+            if (document.getElementById('SubGroup').value == "") {
+                FocusMessages('SubGroup', 'Sub Group');
+                returnVal = false;
+            }
+
+            if (document.getElementById('MinorGroup').value == "") {
+                FocusMessages('MinorGroup', 'Minor Group');
+                returnVal = false;
+            }
+
+            if (document.getElementById('ProductCode').value == "") {
+                FocusMessages('ProductCode', 'Product Code');
+                returnVal = false;
+            }
+
+            if (document.getElementById('ProductDesc').value == "") {
+                FocusMessages('ProductDesc', 'Product Desc');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function EmptyAllInput() 
+        {
+            EmptyDetail();
+            EmptyBill();
+            EmptyShip();
+        };
+
+        function EmptyDetail() 
+        {
+            document.getElementById('compName').value = "";
+            document.getElementById('compAbn').value = "";
+            document.getElementById('compType').value = "";
+            document.getElementById('compActive').value = "";
+            document.getElementById('compComment').value = "";
+        };
+
+        function FocusMessages(focusId, dataName) 
+        {
+            Swal.fire({
+                title: "Invalid Details",
+                text: "You have entered an invalid " + dataName + "\nPlease check and enter again.",
+                icon: "error",
+            });
+
+            setTimeout(() => { document.getElementById(focusId).focus(); }, 1000);
+        };
+
+        function UpdatePrefix(prefix) 
+        {
+            var minorId = document.getElementById('MinorGroup').value;
+
+            if (prefix != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/UpdatePrefix?minorId=" + eval(minorId) + "&prefix=" + prefix,
+                    contentType: "application/json",
+                    dataType: "json",
+                });
+            }
+        };
+
+    </script>
+}

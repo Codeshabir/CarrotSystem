@@ -1,0 +1,213 @@
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+@model CarrotSystem.Models.ViewModel.ViewReportSummary
+
+@{
+    ViewBag.Title = "IP Produce";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="SelectedReportSummaryDetail" id="selectForm" class="form-horizontal" method="POST" novalidate="novalidate">
+                    <input type="hidden" value="PProduce" asp-for="pageType" />
+
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label>Date from</label>
+                            <div class="input-group">
+                                <div class="input-group-addon"></div>
+                                <input asp-for="stringDateFrom" id="datePickerFrom" type="text" class="form-control" value="@Model.dateFrom.Value.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Date to</label>
+                            <div class="input-group">
+                                <div class="input-group-addon"></div>
+                                <input asp-for="stringDateTo" id="datePickerTo" type="text" class="form-control" value="@Model.dateTo.Value.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <button type="submit" class="btn rounded-pill btn-label-primary">Search</button>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <label>Search</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchTextbox" value="" />
+                            </div>
+                        </div>
+
+                        <div class="col-sm-1 form-group">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <button type="button" class="btn rounded-pill btn-label-primary" data-bs-toggle="modal" data-bs-target="#modal-email">Email</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Opening<br />Stock</th>
+                                    <th>Added</th>
+                                    <th>Taken</th>
+                                    <th>Stock<br />Calc</th>
+                                    <th>Stock<br />Count</th>
+                                    <th>Var<br />Units</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td colspan="14"><br /></td>
+                                </tr>
+                                @foreach (var total in Model.rawProduceList.Where(x => x.ProductCode.Equals("Total")).ToList())
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            @if (!string.IsNullOrEmpty(total.Description))
+                                            {
+                                                @total.Description
+                                            }
+                                        </td>
+                                        <td>@total.OpeningStock.ToString("#,##0.#0")</td>
+                                        <td>@total.Added.ToString("#,##0.#0")</td>
+                                        <td>@total.Taken.ToString("#,##0.#0")</td>
+                                        <td>@total.StockCalc.ToString("#,##0.#0")</td>
+                                        <td>@total.StockCount.ToString("#,##0.#0")</td>
+                                        <td>@total.VarUnits.ToString("#,##0.#0")</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="14"><br /></td>
+                                </tr>
+
+                                @foreach (var inventory in Model.rawProduceList.Where(x => (!x.ProductCode.Equals("Total"))).ToList())
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(inventory.Description))
+                                            {
+                                                @inventory.Description
+                                            }
+                                        </td>
+                                        <td>@inventory.OpeningStock.ToString("#,##0.#0")</td>
+                                        <td>@inventory.Added.ToString("#,##0.#0")</td>
+                                        <td>@inventory.Taken.ToString("#,##0.#0")</td>
+                                        <td>@inventory.StockCalc.ToString("#,##0.#0")</td>
+                                        <td>@inventory.StockCount.ToString("#,##0.#0")</td>
+                                        <td>@inventory.VarUnits.ToString("#,##0.#0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <table id="detailTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Description</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Opening<br />Stock</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Added</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Taken</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Stock<br />Calc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Stock<br />Count</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Var<br />Units</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Send Email -->
+<div class="modal fade" id="modal-email">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Send Email</h4>
+            </div>
+            <div class="modal-body">
+                <br />
+                <label>Email Group</label>
+                <select class="form-control select2" id="selEmail">
+                    @if(Model.emailList != null)
+                    {
+                        foreach (var email in Model.emailList)
+                        {
+                            <option value="@email.Id">@email.GroupName</option>
+                        }
+                    }
+                </select>
+                <br />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal" OnClick="SendEmail();">Send</button>
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+@section PageScripts
+{
+    <script>
+        $('#datePickerFrom').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        //Report Date To
+        $('#datePickerTo').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function SendEmail() 
+        {
+            var sendType = "ReportPP";
+            var sendTo = document.getElementById('selEmail').value;
+            var dateFrom = document.getElementById('datePickerFrom').value;
+            var dateTo = document.getElementById('datePickerTo').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Email/SendReportEmailWithAttacnment?sendType=" + sendType + "&sendTo=" + eval(sendTo) + "&dateFrom='" + dateFrom + "'&dateTo='" + dateTo + "'",
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    Swal.fire("Send", "", "success");
+                    location.reload(true);
+                }
+            });
+        };
+
+    </script>
+}

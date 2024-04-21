@@ -1,0 +1,474 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="row mb-5">
+    <div class="col-md-10"></div>
+    <div class="col-md-2">
+        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+            <input type="radio" onclick="filterDashboard(1)" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="btnradio1">Weekly</label>
+
+            <input type="radio" onclick="filterDashboard(2)" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio2">Monthly</label>
+
+            <input type="radio" onclick="filterDashboard(3)" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio3">Yearly</label>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12 col-12">
+        <div class="row">
+            <!-- Statistics Cards -->
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-2">
+                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-purchase-tag fs-4"></i></span>
+                        </div>
+                        <span class="d-block text-nowrap">Purchase</span>
+                        <h2 class="mb-0">
+                            <span id="lbl-purchase"></span>
+                            <div class="spinner-border" role="status" id="lbl-purchase-spin">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-2">
+                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-money fs-4"></i></span>
+                        </div>
+                        <span class="d-block text-nowrap">Sale</span>
+                        <h2 class="mb-0">
+                            <span id="lbl-sale"></span>
+                            <div class="spinner-border" role="status" id="lbl-sale-spin">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-2">
+                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-calculator fs-4"></i></span>
+                        </div>
+                        <span class="d-block text-nowrap">Expense</span>
+                        <h2 class="mb-0">
+                            <span id="lbl-expense"></span>
+                            <div class="spinner-border" role="status" id="lbl-expense-spin">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-2">
+                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-box fs-4"></i></span>
+                        </div>
+                        <span class="d-block text-nowrap">Stock</span>
+                        <h2 class="mb-0">
+                            <span id="lbl-stock"></span>
+                            <div class="spinner-border" role="status" id="lbl-stock-spin">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <!--/ Statistics Cards -->
+        </div>
+    </div>
+</div>
+<div class="row">
+
+    
+
+    <!-- Weekly Order Summary -->
+    <div class="col-xl-6 col-12 mb-4">
+        <div class="card">
+            <div class="row row-bordered m-0">
+                <!-- Order Summary -->
+                <div class="col-md-12 col-12 px-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <span>
+                               Sales Summary
+                            </span>
+                            <span class="spinner-border" role="status" id="lbl-sales-summary-heading">
+                                <span class="visually-hidden">Loading...</span>
+                            </span>
+                        </h5>
+                        <div class="dropdown">
+                            <button class="btn p-0"
+                                    type="button"
+                                    id="orderSummaryOptions"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orderSummaryOptions">
+                                <a class="dropdown-item" href="javascript:void(0);">Select All</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="sale-summary-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Weekly Order Summary -->
+    <div class="col-xl-6 col-12 mb-4">
+        <div class="card">
+            <div class="row row-bordered m-0">
+                <!-- Order Summary -->
+                <div class="col-md-12 col-12 px-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Purchase Summary
+                            <span class="spinner-border" role="status" id="lbl-purchase-summary-heading">
+                                <span class="visually-hidden">Loading...</span>
+                            </span>
+                        </h5>
+                        <div class="dropdown">
+                            <button class="btn p-0"
+                                    type="button"
+                                    id="orderSummaryOptions"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orderSummaryOptions">
+                                <a class="dropdown-item" href="javascript:void(0);">Select All</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="purhcase-summary-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section PageScripts {
+    <script src="~/theme/theme01/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script>
+
+        let cardColor, headingColor, labelColor, legendColor, borderColor, shadeColor;
+
+        if (isDarkStyle) {
+            cardColor = config.colors_dark.cardColor;
+            headingColor = config.colors_dark.headingColor;
+            labelColor = config.colors_dark.textMuted;
+            legendColor = config.colors_dark.bodyColor;
+            borderColor = config.colors_dark.borderColor;
+            shadeColor = 'dark';
+        } else {
+            cardColor = config.colors.white;
+            headingColor = config.colors.headingColor;
+            labelColor = config.colors.textMuted;
+            legendColor = config.colors.bodyColor;
+            borderColor = config.colors.borderColor;
+            shadeColor = 'light';
+        }
+
+
+        function filterDashboard(filterType) {
+            dashboardLoading(true)
+
+            $.ajax({
+                type: "POST",
+                url: `@Url.Action("GetDashboardInfo", "Home")?filterType=${filterType}`,
+                success: function (response) {
+                    setTimeout(function () {
+                        dashboardLoading(false);
+                        $("#lbl-purchase").text(response.purchase)
+                        $("#lbl-sale").text(response.sale)
+                        $("#lbl-expense").text(response.expense)
+                        $("#lbl-stock").text(response.stock)
+
+                        console.log(response.salesLabel, response.saleValues);
+
+                        salesSummaryEl(response.salesLabels, response.salesValues);
+                        purchaseSummaryEl(response.purchaseLabels, response.purchaseValues);
+                    }, 2000);
+                }
+            });
+           
+        }
+
+        function salesSummaryEl(salesLabel, saleValues)
+        {
+            const orderSummaryEl = document.querySelector('#sale-summary-chart'),
+                orderSummaryConfig = {
+                    chart: {
+                        height: 230,
+                        type: 'area',
+                        toolbar: false,
+                        dropShadow: {
+                            enabled: true,
+                            top: 18,
+                            left: 2,
+                            blur: 3,
+                            color: config.colors.primary,
+                            opacity: 0.15
+                        }
+                    },
+                    markers: {
+                        size: 6,
+                        colors: 'transparent',
+                        strokeColors: 'transparent',
+                        strokeWidth: 4,
+                        discrete: [
+                            {
+                                fillColor: cardColor,
+                                seriesIndex: 0,
+                                dataPointIndex: 9,
+                                strokeColor: config.colors.primary,
+                                strokeWidth: 4,
+                                size: 6,
+                                radius: 2
+                            }
+                        ],
+                        hover: {
+                            size: 7
+                        }
+                    },
+                    series: [
+                        {
+                            data: saleValues
+                        }
+                    ],
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        curve: 'smooth',
+                        lineCap: 'round'
+                    },
+                    colors: [config.colors.primary],
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shade: shadeColor,
+                            shadeIntensity: 0.8,
+                            opacityFrom: 0.7,
+                            opacityTo: 0.25,
+                            stops: [0, 95, 100]
+                        }
+                    },
+                    grid: {
+                        show: true,
+                        borderColor: borderColor,
+                        padding: {
+                            top: -15,
+                            bottom: -10,
+                            left: 15,
+                            right: 10
+                        }
+                    },
+                    xaxis: {
+                        categories: salesLabel,
+                        labels: {
+                            offsetX: 0,
+                            style: {
+                                colors: labelColor,
+                                fontSize: '13px'
+                            }
+                        },
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false
+                        },
+                        lines: {
+                            show: false
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            offsetX: 7,
+                            formatter: function (val) {
+                                return val;
+                            },
+                            style: {
+                                fontSize: '13px',
+                                colors: labelColor
+                            }
+                        },
+                        min: 0,
+                        max: 40,
+                        tickAmount: 4
+                    }
+                };
+            if (typeof orderSummaryEl !== undefined && orderSummaryEl !== null) {
+                const orderSummary = new ApexCharts(orderSummaryEl, orderSummaryConfig);
+                orderSummary.render();
+            }
+        }
+
+        function purchaseSummaryEl(salesLabel, saleValues) {
+            const orderSummaryEl = document.querySelector('#purhcase-summary-chart'),
+                orderSummaryConfig = {
+                    chart: {
+                        height: 230,
+                        type: 'area',
+                        toolbar: false,
+                        dropShadow: {
+                            enabled: true,
+                            top: 18,
+                            left: 2,
+                            blur: 3,
+                            color: config.colors.primary,
+                            opacity: 0.15
+                        }
+                    },
+                    markers: {
+                        size: 6,
+                        colors: 'transparent',
+                        strokeColors: 'transparent',
+                        strokeWidth: 4,
+                        discrete: [
+                            {
+                                fillColor: cardColor,
+                                seriesIndex: 0,
+                                dataPointIndex: 9,
+                                strokeColor: config.colors.primary,
+                                strokeWidth: 4,
+                                size: 6,
+                                radius: 2
+                            }
+                        ],
+                        hover: {
+                            size: 7
+                        }
+                    },
+                    series: [
+                        {
+                            data: saleValues
+                        }
+                    ],
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        curve: 'smooth',
+                        lineCap: 'round'
+                    },
+                    colors: [config.colors.primary],
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shade: shadeColor,
+                            shadeIntensity: 0.8,
+                            opacityFrom: 0.7,
+                            opacityTo: 0.25,
+                            stops: [0, 95, 100]
+                        }
+                    },
+                    grid: {
+                        show: true,
+                        borderColor: borderColor,
+                        padding: {
+                            top: -15,
+                            bottom: -10,
+                            left: 15,
+                            right: 10
+                        }
+                    },
+                    xaxis: {
+                        categories: salesLabel,
+                        labels: {
+                            offsetX: 0,
+                            style: {
+                                colors: labelColor,
+                                fontSize: '13px'
+                            }
+                        },
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false
+                        },
+                        lines: {
+                            show: false
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            offsetX: 7,
+                            formatter: function (val) {
+                                return val;
+                            },
+                            style: {
+                                fontSize: '13px',
+                                colors: labelColor
+                            }
+                        },
+                        min: 0,
+                        max: 40,
+                        tickAmount: 4
+                    }
+                };
+            if (typeof orderSummaryEl !== undefined && orderSummaryEl !== null) {
+                const orderSummary = new ApexCharts(orderSummaryEl, orderSummaryConfig);
+                orderSummary.render();
+            }
+        }
+        
+        function dashboardLoading(isShow) 
+        {
+            $("#sale-summary-chart").html('');
+            $("#purhcase-summary-chart").html('');
+
+            if (isShow == true) {
+                $("#lbl-purchase-spin").show();
+                $("#lbl-sale-spin").show();
+                $("#lbl-expense-spin").show();
+                $("#lbl-stock-spin").show();
+                $("#lbl-sales-summary-heading").show();
+                $("#lbl-purchase-summary-heading").show();
+
+            }
+
+            if (isShow == false) {
+                $("#lbl-purchase-spin").hide();
+                $("#lbl-sale-spin").hide();
+                $("#lbl-expense-spin").hide();
+                $("#lbl-stock-spin").hide();
+                $("#lbl-sales-summary-heading").hide();
+                $("#lbl-purchase-summary-heading").hide();
+            }
+
+           
+        }
+
+        filterDashboard(1);
+
+    </script>
+}

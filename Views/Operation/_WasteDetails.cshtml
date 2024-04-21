@@ -1,0 +1,78 @@
+﻿@model CarrotSystem.Models.ViewModel.DetailViewWaste
+
+@{
+    Layout = null;
+}
+
+@if (Model.detailList.Count > 0)
+{
+    @foreach (var waste in Model.detailList)
+    {
+        if(waste.IsClosed)
+        {
+            <tr>
+                <td>@waste.WasteDate.ToString("dd/MM/yyyy")</td>
+                <td>@waste.ProductCode</td>
+                <td>@waste.ProductDesc</td>
+                <td>@waste.ProductQty</td>
+                <td>@waste.Supplier</td>
+                <td>@waste.Reason</td>
+                <td class="text-center">
+                    <button class="btn btn-icon btn-danger" disabled><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td>
+                    <input class="form-control" type="date" value="@waste.WasteDate.ToString("yyyy-MM-dd")" onchange="ChangeValue('@waste.WasteId', 'WasteDate', this.value);" />
+                </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@waste.WasteId', 'ProductCode', this.value);">
+                        <option value="@waste.ProductId">@waste.ProductCode || @waste.ProductDesc</option>
+                        @foreach(var product in Model.productList.Where(w=>!w.Code.Equals(waste.ProductCode)).ToList())
+                        {
+                            <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                        }
+                    </select>
+                </td>
+                <td id="ProductDesc_@waste.WasteId" style="vertical-align:middle;">
+                    @waste.ProductDesc
+                </td>
+                <td>
+                    <input class="form-control" type="text" value="@waste.ProductQty" onchange="ChangeValue('@waste.WasteId', 'Qty', this.value);" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');"/>
+                </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@waste.WasteId', 'Supplier', this.value);">
+                        <option value="@waste.SupplierPK">@waste.Supplier</option>
+                        @foreach(var sup in Model.supplierList.Where(w=>!w.Pk.Equals(waste.SupplierPK)).ToList())
+                        {
+                            <option value="@sup.Pk">@sup.CompanyName</option>
+                        }
+                    </select>
+               </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@waste.WasteId', 'Reason', this.value);" >
+                        <option value="@waste.Reason">@waste.Reason</option>
+                        @foreach(var reason in Model.reasonList.Where(w=>!w.Reason.Equals(waste.Reason)).OrderBy(o=>o.SortId).ToList())
+                        {
+                            <option value="@reason.Reason">@reason.Reason</option>
+                        }
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-icon btn-danger" OnClick="DeleteModel(@waste.WasteId)"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+        }
+    }
+}
+else
+{
+    <div class="alert alert-warning">
+        No records for the selected period.
+    </div>
+}
+
+

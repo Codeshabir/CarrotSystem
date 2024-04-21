@@ -1,0 +1,260 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewSettings
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Email Group List";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn rounded-pill btn-label-primary" data-bs-toggle="modal" data-bs-target="#modal-addData">New Group</button>
+                    </div>
+                    <div class="col-sm-8"></div>
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                           <input class="form-control" type="text" id="searchText" placeholder="Search ..." />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-body">
+                 <div class="row">
+                     <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%;">Group ID</th>
+                                    <th style="width:10%;">Group Name</th>
+                                    <th style="width:80%;">Email Address</th>
+                                    <th style="width:5%;"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var email in Model.emailList)
+                                {
+                                    <tr ondblclick="EditModal(@email.Id);">
+                                        <td style="width:10%;">@email.Id</td>
+                                        <td style="width:10%;">@email.GroupName</td>
+                                        <td style="width:80%;">@email.EmailAddress</td>
+                                        <td>
+                                            <button type="button" class="btn btn-icon btn-danger text-white" Onclick="DeleteEmail(@email.Id)"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for New Description -->
+<div class="modal fade" id="modal-addData">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Add Email Group</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Group Name</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" id="newName" class="form-control" placeholder="Group Name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Email Address</label>
+                        <div class="col-sm-8 input-group">
+                            <textarea style="width:100%;height:150px;" id="newEmail" placeholder="Email Address" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" OnClick="AddData();">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal Add Desc-->
+<!-- Modal for Edit Description -->
+<div class="modal fade" id="modal-editData">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Edit Email Group</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Group Name</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" id="editName" class="form-control" placeholder="Group Name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Email Address</label>
+                        <div class="col-sm-8 input-group">
+                            <textarea style="width:100%;height:150px;" id="editEmail" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" OnClick="editData();">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal Edit Desc-->
+
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Settings", "Email Group");
+
+        $(document).ready(function () 
+        {
+            //Data Table
+            var dataTable = $('#dataTable').DataTable({
+                order: [[1, 'asc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 25, 
+                "dom": '<"top"i>rt<"bottom"><"clear">'
+            });
+
+
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+        });
+
+        //Modal Add Data
+        $('#modal-addData').on('show.bs.modal', function (event) { });
+
+        //Modal Edit Data
+        $('#modal-editData').on('show.bs.modal', function (event) { });
+
+        function AddData() 
+        {
+            var newName = document.getElementById('newName').value;
+            var newEmail = document.getElementById('newEmail').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/AddEmail?newName=" + newName + "&newEmail=" + newEmail,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function EditModal(emailId) 
+        {
+            GetData(emailId);
+            $('#modal-editData').modal();
+
+        }
+
+        function GetData(emailId) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Home/GetDetails?content=Email&contentId=" + eval(emailId),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) 
+                {
+                    document.getElementById('editId').value = response.id;
+                    document.getElementById('editName').value = response.groupName;
+                    document.getElementById('editEmail').value = response.emailAddress;
+                }
+            });
+
+        };
+
+        function editData() 
+        {
+            var editId = document.getElementById('editId').value;
+            var editName = document.getElementById('editName').value;
+            var editEmail = document.getElementById('editEmail').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/EditEmail?emailId=" + eval(editId) + "&editName=" + editName + "&editEmail=" + editEmail,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function DeleteEmail(editId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Email Group?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Home/DeleteEmail?emailId=" + eval(editId),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                            location.reload(true);
+                        }
+                    });
+
+                }
+            });
+        };
+
+    </script>
+}

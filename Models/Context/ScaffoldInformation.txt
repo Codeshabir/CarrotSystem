@@ -1,0 +1,31 @@
+﻿==Merc TCC==
+Scaffold-DbContext "Server=MERCMYOB1;Database=CarrotSystem;user id=MercWebAdmin;pwd=Merc@235;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models/CarrotSystem -Tables [dbo].[Address], [dbo].[Company], [dbo].[CompanyType], [dbo].[Constants], [dbo].[CopyOfProductMapping], [dbo].[ErrorLog], [dbo].[Expense], [dbo].[Job], [dbo].[MYOBLog], [dbo].[Period], [dbo].[Product], [dbo].[ProductCont], [dbo].[ProductContGGP], [dbo].[ProductContPKG], [dbo].[ProductInventory], [dbo].[ProductInventoryFreight], [dbo].[ProductInventoryValue], [dbo].[ProductInventoryYTD], [dbo].[ProductMainGroup], [dbo].[ProductMapping], [dbo].[ProductMinorGroup], [dbo].[ProductPacking], [dbo].[ProductPackingDesc], [dbo].[ProductRecipe], [dbo].[ProductRepacking], [dbo].[ProductSubGroup], [dbo].[ProductTransfer], [dbo].[ProductUnit], [dbo].[Purchase], [dbo].[PurchaseItem], [dbo].[PurchaseStatus], [dbo].[PurchaseType], [dbo].[RepackReason], [dbo].[Sale], [dbo].[SaleDispatch], [dbo].[SaleDispatchItem], [dbo].[SaleItem], [dbo].[SaleStatus], [dbo].[SaleType], [dbo].[StockCount], [dbo].[Tax], [dbo].[Waste], [dbo].[WasteReason],[dbo].[MYOBSync], [dbo].[EmailGroup], [dbo].[Events], [dbo].[EventSettings], [dbo].[ExportTCCLines], [dbo].[ProductSettings], [dbo].[Users] -ContextDir "Data/Context" -Context DBContext -f
+
+Scaffold-DbContext "Server=MERCMYOB1;Database=MercGGP;user id=MercWebAdmin;pwd=Merc@235;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models/GGP -Tables [dbo].[Address], [dbo].[Company], [dbo].[CompanyType], [dbo].[Constants], [dbo].[ErrorLog], [dbo].[Expense], [dbo].[Job], [dbo].[MYOBLog], [dbo].[Period], [dbo].[Product], [dbo].[ProductContGGP], [dbo].[ProductContLMG] , [dbo].[ProductContPKG], [dbo].[ProductInventory], [dbo].[ProductInventoryFreight], [dbo].[ProductInventoryValue], [dbo].[ProductInventoryYTD], [dbo].[ProductMainGroup], [dbo].[ProductMapping], [dbo].[ProductMinorGroup], [dbo].[ProductPacking], 		[dbo].[ProductRecipe], [dbo].[ProductRepacking], [dbo].[ProductSubGroup], 		[dbo].[Transfer], [dbo].[ProductUnit], [dbo].[Purchase], [dbo].[PurchaseItem], [dbo].[PurchaseStatus], [dbo].[PurchaseType], [dbo].[RepackReason], [dbo].[Sale], [dbo].[SaleDispatch], [dbo].[SaleDispatchItem], [dbo].[SaleItem], [dbo].[SaleStatus], [dbo].[SaleType], [dbo].[StockCount], [dbo].[Tax], [dbo].[tbl_deleted], [dbo].[tblAuthUsers], [dbo].[Waste], [dbo].[WasteReason] -ContextDir "Data/Context" -Context GgpContext -f
+
+Scaffold-DbContext "Server=MERCMYOB1;Database=CarrotSystem;user id=MercWebAdmin;pwd=Merc@235;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models/PO -Tables [dbo].[POForms], [dbo].[POFormTemplates], [dbo].[POFormLogs], [dbo].[POFormFiles] -ContextDir "Models/Context" -Context POContext -f
+
+=== MPS ===
+
+Scaffold-DbContext "Server=mps.mercorella.au;Database=MercProductionService;user id=mpsDBadmin;pwd=t5xiwD2rcjg?02BVv;TrustServerCertificate=True;MultipleActiveResultSets=true;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models/MPS -Tables [dbo].[Address], [dbo].[Company], [dbo].[CompanyType], [dbo].[Constants], [dbo].[EmailGroup], [dbo].[ErrorLog], [dbo].[Events], [dbo].[EventSettings], [dbo].[Expense], [dbo].[ExportTCCLines], [dbo].[Job], [dbo].[MYOBLog], [dbo].[MYOBSync], [dbo].[Period], [dbo].[Product], [dbo].[ProductCont], [dbo].[ProductContGGP], [dbo].[ProductContPKG], [dbo].[ProductInventory], [dbo].[ProductInventoryFreight], [dbo].[ProductInventoryValue], [dbo].[ProductInventoryYTD], [dbo].[ProductMainGroup], [dbo].[ProductMapping], [dbo].[ProductMinorGroup], [dbo].[ProductPacking], [dbo].[ProductPackingDesc], [dbo].[ProductRecipe], [dbo].[ProductRepacking], [dbo].[ProductSettings], [dbo].[ProductSubGroup], [dbo].[ProductTransfer], [dbo].[ProductUnit], [dbo].[Purchase], [dbo].[PurchaseItem], [dbo].[PurchaseStatus], [dbo].[PurchaseType], [dbo].[RepackReason], [dbo].[Sale], [dbo].[SaleDispatch], [dbo].[SaleDispatchItem], [dbo].[SaleItem], [dbo].[SaleStatus], [dbo].[SaleType], [dbo].[StockCount], [dbo].[Tax], [dbo].[Users], [dbo].[Waste], [dbo].[WasteReason], [dbo].[XeroLog], [dbo].[XeroSync] -ContextDir "Models/Context" -Context MPSContext -f
+
+
+== Context ==
+public DBContext(string option)
+{
+    this.option = option;
+}
+public string option { get; set; }
+
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    if (!optionsBuilder.IsConfigured && option.Equals("Live"))
+    {
+        optionsBuilder.UseSqlServer("Server=MERCMYOB1;Database=MercTCC;user id=MercWebAdmin;pwd=Merc@235;");
+
+    }
+    else if (!optionsBuilder.IsConfigured && option.Equals("Test"))
+    {
+        optionsBuilder.UseSqlServer("Server=MERCMYOB1;Database=MercTCC_Backup;user id=MercWebAdmin;pwd=Merc@235;");
+    }
+}

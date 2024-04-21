@@ -1,0 +1,1471 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@model CarrotSystem.Models.ViewModel.ViewSales
+
+@{
+    ViewBag.Title = "Sales Details";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<form id="saleProfile" asp-action="EditSales" asp-controller="Sales" method="POST">
+    <div class="row invoice-add">
+        <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+            <div class="card invoice-preview-card">
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <label>Invoice #</label>
+                            <div class="input-group">
+                                @if (Model.isNew)
+                                {
+                                    <input type="text" class="form-control" disabled />
+                                }
+                                else
+                                {
+                                    <input asp-for="saleView.InvoiceId" type="hidden" value="@Model.saleView.InvoiceId" />
+                                    <input type="text" id="invoiceId" class="form-control" value="@Model.saleView.InvoiceId" disabled />
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Status</label>
+                            <div class="input-group">
+                                @if (Model.isNew)
+                                {
+                                    <input asp-for="saleView.Status" type="hidden" value="New" />
+                                    <input type="text" class="form-control" value="New" disabled />
+                                }
+                                else
+                                {
+                                    <input asp-for="saleView.Status" type="hidden" value="@Model.saleView.Status" />
+                                    <input type="text" id="status" class="form-control" value="@Model.saleView.Status" disabled />
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 mt-2">
+                            <div class="demo-inline-spacing">
+
+                                @if (Model.isClosed)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Save</button>
+                                }
+                                else
+                                {
+
+                                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="SaveData();">Save</button>
+                                }
+
+                                @if (Model.isNew)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Copy</button>
+                                }
+                                else
+                                {
+                                    @if (Model.isClosed)
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" disabled>Copy</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" asp-action="CopySales" asp-controller="Sales" asp-route-invId="@Model.saleView.InvoiceId">Copy</button>
+                                    }
+                                }
+
+                                <a class="btn rounded-pill btn-label-primary" asp-action="SalesDetails" asp-route-id="New">Add Another</a>
+
+
+                                @if (Model.isNew)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>View Invoice</button>
+                                }
+                                else
+                                {
+                                    @if (Model.saleView.Status.Equals("New"))
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" disabled>View Invoice</button>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn rounded-pill btn-label-primary" target="_blank" asp-controller="Sales" asp-action="ViewSales" asp-route-invoiceid="@Model.saleView.InvoiceId">View Invoice</a>
+                                    }
+                                }
+
+                                @if (Model.isNew)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Email</button>
+                                }
+                                else
+                                {
+                                    @if (Model.saleView.Status.Equals("New"))
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" disabled>Email</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" data-bs-toggle="modal" data-bs-target="#modal-email">Email</button>
+                                    }
+                                }
+
+                                @if (Model.isNew)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Hold</button>
+                                }
+                                else
+                                {
+                                    @if (Model.canHold)
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" OnClick="HoldData()">Hold</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn rounded-pill btn-label-primary" disabled>Hold</button>
+                                    }
+                                }
+
+                                @if (Model.isNew)
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Delete</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="DeleteModel('Sales','@Model.saleView.InvoiceId')">Delete</button>
+                                }
+
+                                <a class="btn rounded-pill btn-label-primary" href="/Sales/SalesList">Close</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row invoice-add mt-3">
+        <!-- Invoice Add-->
+        <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+            <div class="card invoice-preview-card">
+                <div class="card-body">
+                    <div class="row">
+                        <table class="table table-hover table-borderless">
+                            <tr>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Type</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Delivery Date</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Customer Po</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Revision</th>
+
+                            </tr>
+                            <tr>
+                                @if (Model.isNew)
+                                {
+                                    <td class="text-left">
+                                        <select asp-for="saleView.Type" class="form-select" id="type" OnChange="ChangeType(this.value);">
+                                            @foreach (var type in Model.typeList)
+                                            {
+                                                <option value="@type.Type">@type.Type</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="text-left">
+                                        <div class="input-group">
+                                            <input asp-for="saleView.strDelDate" id="deliveryDate" type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" OnChange="GetArrivalDate(this.value);" />
+                                        </div>
+                                    </td>
+                                    <td class="text-left">
+                                        <input type="text" class="form-control" value="" asp-for="saleView.CustPO" id="custpo" />
+                                    </td>
+                                    <td class="text-left">
+                                        <input type="text" class="form-control" value="" asp-for="saleView.Revision" disabled />
+                                    </td>
+                                }
+                                else
+                                {
+                                    @if (Model.isClosed)
+                                    {
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.Type" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="@Model.saleView.DeliveryDate.ToString("dd/MM/yyyy")" disabled />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.CustPO" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.Revision" disabled />
+                                        </td>
+
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left">
+                                            <select asp-for="saleView.Type" class="form-select" id="type" OnChange="ChangeType(this.value);">
+                                                <option value="@Model.saleView.Type">@Model.saleView.Type</option>
+                                                @foreach (var type in Model.typeList.Where(w => !w.Type.Equals(Model.saleView.Type)).ToList())
+                                                {
+                                                    <option value="@type.Type">@type.Type</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <input asp-for="saleView.strDelDate" id="deliveryDate" type="text" class="form-control" value="@Model.saleView.DeliveryDate.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" OnChange="GetArrivalDate(this.value);" />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.CustPO" asp-for="saleView.CustPO" id="custpo" />
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.Revision" asp-for="saleView.Revision" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" />
+                                        </td>
+
+                                    }
+                                }
+                            </tr>
+
+                            <tr>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Customer</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Arrival Date</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Ship To</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left">Comment</th>
+                            </tr>
+
+                            <tr>
+                                @if (Model.isNew)
+                                {
+                                    <td class="text-left">
+                                        <select asp-for="saleView.Customer" class="form-select" id="customer" OnChange="GetShipAddress(this.value)">
+                                            @foreach (var cust in Model.customerList)
+                                            {
+                                                <option value="@cust.Pk">@cust.CompanyName</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="text-left">
+                                        <div class="input-group">
+                                            <input asp-for="saleView.strArrDate" id="arrivalDate" type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                                        </div>
+                                    </td>
+                                    <td class="text-left">
+                                        <select class="form-select" id="shipTo" asp-for="saleView.AddId">
+                                        </select>
+                                    </td>
+                                    <td class="text-left">
+                                          <textarea class="form-control" value="" asp-for="saleView.Comment">
+                                                            </textarea>
+                                    </td>
+                                }
+                                else
+                                {
+                                    @if (Model.isClosed)
+                                    {
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.Customer" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <div class="input-group-addon"></div>
+                                                <input type="text" class="form-control" value="@Model.saleView.ArrivalDate.ToString("dd/MM/yyyy")" disabled />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.saleView.Address" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            @if (!string.IsNullOrEmpty(Model.saleView.Comment))
+                                            {
+                                                <input type="text" class="form-control" value="@Model.saleView.Comment" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" value="" disabled />
+                                            }
+                                        </td>
+
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left">
+                                            <select asp-for="saleView.Customer" class="form-select" id="customer" OnChange="GetShipAddress(this.value)">
+                                                <option value="@Model.saleView.CustId">@Model.saleView.Customer</option>
+                                                @foreach (var cust in Model.customerList)
+                                                {
+                                                    <option value="@cust.Pk">@cust.CompanyName</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <div class="input-group-addon"></div>
+                                                <input asp-for="saleView.strArrDate" id="arrivalDate" type="text" class="form-control" value="@Model.saleView.ArrivalDate.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            <select asp-for="saleView.AddId" class="form-select" id="shipTo">
+                                                <option value="@Model.saleView.AddId">@Model.saleView.Address</option>
+                                                @foreach (var ship in Model.shipList)
+                                                {
+                                                    <option value="@ship.Id">@ship.Street @ship.City @ship.State @ship.Postcode</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="text-left">
+                                            @if (!string.IsNullOrEmpty(Model.saleView.Comment))
+                                            {
+                                                <textarea class="form-control" value="@Model.saleView.Comment" asp-for="saleView.Comment">
+                                                </textarea>
+                                            }
+                                            else
+                                            {
+                                                <textarea class="form-control" value="" asp-for="saleView.Comment">
+                                                            </textarea>
+                                            }
+                                        </td>
+                                    }
+                                }
+                            </tr>
+
+                        </table>
+
+                        <table class="table table-hover table-borderless">
+                            <tr>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-left" id="claimRefTh">
+                                    @if ((!string.IsNullOrEmpty(Model.saleView.Type)) && Model.saleView.Type.Contains("Claim"))
+                                    {
+                                        @Html.Raw("Claim Ref")
+                                    }
+                                </th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-center">Invoice Sub Total</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-center">Invoice Tax</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2 text-center">Invoice Total</th>
+                            </tr>
+
+                            <tr>
+                                @if ((!string.IsNullOrEmpty(Model.saleView.Type)) && Model.saleView.Type.Contains("Claim"))
+                                {
+                                    @if (!string.IsNullOrEmpty(Model.saleView.ClaimRef))
+                                    {
+                                        <td class="text-left" id="claimListTd">
+                                            <div id="claimRefListDiv">
+                                                <input asp-for="saleView.ClaimRef" type="text" class="form-control" value="@Model.saleView.ClaimRef" />
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left" id="claimListTd">
+                                            <div id="claimRefListDiv">
+                                                <select asp-for="saleView.ClaimRef" id="claimRef" style="width:100%;" class="form-select" OnChange="GetClaimDetails(this.value);">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    }
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrEmpty(Model.saleView.ClaimRef))
+                                    {
+                                        <td class="text-left" id="claimListTd">
+                                            <div id="claimRefListDiv" hidden>
+                                                <input type="text" class="form-control" value="@Model.saleView.ClaimRef" disabled />
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left" id="claimListTd">
+                                            <div id="claimRefListDiv" hidden>
+                                                <select asp-for="saleView.ClaimRef" id="claimRef" style="width:100%;" class="form-select" OnChange="GetClaimDetails(this.value);">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    }
+                                }
+                                <td class="text-center">$@String.Format("{0:#,0.00}", Model.saleView.invTotal.InvoiceSubTotal)</td>
+                                <td class="text-center">$@String.Format("{0:#,0.00}", Model.saleView.invTotal.InvoiceTaxTotal)</td>
+                                <td class="text-center">$@String.Format("{0:#,0.00}", Model.saleView.invTotal.InvoiceTotal)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="row invoice-add mt-3">
+    <!-- Invoice Add-->
+    <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+        <div class="card invoice-preview-card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="nav-align-top mb-4">
+                            <ul class="nav nav-pills mb-3" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-profile" aria-controls="navs-pills-top-home" aria-selected="true">
+                                        Profile
+                                    </button>
+                                </li>
+
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-dispatch" aria-controls="navs-pills-top-profile" aria-selected="false" tabindex="-1">
+                                        Dispatch
+                                    </button>
+                                </li>
+
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-claims" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                        Claims
+                                    </button>
+                                </li>
+
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-freight" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                        Freight
+                                    </button>
+                                </li>
+
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-messages" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                        More
+                                    </button>
+                                </li>
+
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="navs-pills-top-profile" role="tabpanel">
+                                    <div class="row">
+                                        <div class="form-group mb-3">
+
+                                            <div class="radio">
+                                                <label class="mr-2" style="margin-right:20px;">
+                                                    <input type="radio" class="form-check-input mr-2" name="oprRadios" id="radioMerc" value="MercCode" checked OnClick="SwitchCode(this.value);">
+                                                    Merc Product Code
+                                                </label>
+                                                <label>
+                                                    <input type="radio" class="form-check-input ml-5" name="oprRadios" id="radioComp" value="CompCode" OnClick="SwitchCode(this.value);">
+                                                    Company Product Code
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table id="dataTable" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Sort</th>
+                                                <th class="col-lg-2 col-md-2 col-sm-2"><span name="MercCode">Merc Code</span><span name="CompCode" hidden>Cust Code</span></th>
+                                                <th class="col-lg-2 col-md-2 col-sm-2"><span name="MercCode">Merc Desc</span><span name="CompCode" hidden>Cust Desc</span></th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Qty</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Total</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Job</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Freight</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach (var item in Model.invoiceItemList)
+                                            {
+                                                @if (Model.saleView.Status.Equals("Exported") || Model.isClosed)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.SortID" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <span name="MercCode"><input type="text" class="form-control" value="@item.ProductCode" disabled /></span>
+                                                            <span name="CompCode" hidden><input type="text" class="form-control" value="@item.CustomerCode" disabled /></span>
+                                                        </td>
+                                                        <td>
+                                                            <span name="MercCode"><input type="text" class="form-control" value="@item.ProductDesc" disabled /></span>
+                                                            <span name="CompCode" hidden><input type="text" class="form-control" value="@item.CustomerDesc" disabled /></span>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.InvoicedQty" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.Price.ToString(" $ 0.00")" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.InvoiceTotal.ToString(" $ 0.00")" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.Tax" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.Job" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.FreightProportion.ToString(" 0.00 %")" disabled />
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <button class="btn btn-icon btn-danger" OnClick="DeleteModel('SaleItem', '@item.ItemId');"><i class="fa fa-trash"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.SortID" id="sort_@item.ItemId" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" onchange="UpdateData(@item.ItemId, 'Sort', this.value);" />
+                                                        </td>
+                                                        <td>
+                                                            <span name="MercCode">
+                                                                <select id="proCode_@item.ItemId" class="form-select" OnChange="UpdateData(@item.ItemId, 'ProductCode', this.value); GetProductInfo(this.value, @item.ItemId);">
+                                                                    <option value="@item.ProductId">@item.ProductCode</option>
+                                                                    @foreach (var product in Model.productList.Where(w => !w.Id.Equals(item.ProductId)).ToList())
+                                                                    {
+                                                                        <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                    }
+                                                                </select>
+                                                            </span>
+
+
+                                                            <span name="CompCode" hidden>
+                                                                <select id="custCode_@item.ItemId" class="form-select" OnChange="UpdateData(@item.ItemId, 'ProductCode', this.value); GetProductInfo(this.value, @item.ItemId);">
+                                                                    <option value="@item.ProductId">@item.CustomerCode</option>
+                                                                    @foreach (var product in Model.productList.Where(w => !w.Id.Equals(item.ProductId)).ToList())
+                                                                    {
+                                                                        <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                    }
+                                                                </select>
+                                                            </span>
+                                                        </td>
+
+
+
+                                                        <td>
+                                                            <span name="MercCode"><input type="text" class="form-control" value="@item.ProductDesc" id="proDesc_@item.ItemId" disabled /></span>
+                                                            <span name="CompCode" hidden><input type="text" class="form-control" value="@item.CustomerDesc" id="custDesc_@item.ItemId" disabled /></span>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.InvoicedQty" id="invQty_@item.ItemId" OnChange="CalcTotalItem(@item.ItemId);" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.Price.ToString(" $ 0.00")" id="invPrice_@item.ItemId" OnChange="CalcTotalItem(@item.ItemId);" onKeyup="this.value=this.value.replace(/[^0-9][.][^0-9]/g,'');" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.InvoiceTotal.ToString(" $ 0.00")" id="invTotal_@item.ItemId" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="hidden" class="form-control" id="itemTaxJson_@item.ItemId" />
+                                                            <input type="text" class="form-control" value="@item.Tax" id="itemTax_@item.ItemId" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.Job" disabled />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" value="@item.FreightProportion.ToString(" 0.00 %")" disabled />
+                                                        </td>
+                                                        <td class="text-center">
+                                                             <div class="btn-group">
+                                                                 <button class="btn btn-icon btn-danger" OnClick="DeleteModel('SaleItem', '@item.ItemId');"><i class="fa fa-trash"></i></button>
+                                                             </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+
+                                            @if (Model.saleView.Status.Equals("Invoice") && (!Model.isClosed))
+                                            {
+                                                <tr>
+                                                    <form method="POST" asp-action="AddSaleItem" asp-controller="Sales" id="NewItemForm">
+                                                        <input type="hidden" asp-for="itemView.InvoiceId" value="@Model.saleView.InvoiceId" />
+                                                    <td>
+                                                        <input type="text" asp-for="itemView.SortID" class="form-control" id="newItemSort" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" />
+                                                    </td>
+                                                    <td>
+                                                        <span name="MercCode">
+                                                            <select id="newItemProCode" asp-for="itemView.ProductId" class="form-select" OnChange="GetProductInfo(this.value, 'New')">
+                                                                <option value=""></option>
+                                                                    @foreach (var product in Model.productList)
+                                                                    {
+                                                                    <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                    }
+                                                            </select>
+                                                        </span>
+                                                        <span name="CompCode" hidden>
+                                                            <select id="newItemCustCode" asp-for="itemView.CustProductId" class="form-control" OnChange="GetProductInfo(this.value, 'New')">
+                                                                <option value=""></option>
+                                                                    @foreach (var product in Model.productList)
+                                                                    {
+                                                                    <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                    }
+                                                            </select>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span name="MercCode"><input id="newItemProDesc" type="text" class="form-control" disabled /></span>
+                                                        <span name="CompCode" hidden><input id="newItemCustDesc" type="text" class="form-control" disabled /></span>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" asp-for="itemView.InvoicedQty" id="newItemInvQty" OnChange="CalcTotalItem('New');" onKeyup="this.value=this.value.replace(/[^0-9-.]/g,'');" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" asp-for="itemView.Price" id="newItemPrice" OnChange="CalcTotalItem('New');" onKeyup="this.value=this.value.replace(/[^0-9][.][^0-9]/g,'');" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" asp-for="itemView.InvoiceTotal" id="newItemInvTotal" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" asp-for="itemView.Tax" id="newItemTaxJson" />
+                                                        <input type="text" class="form-control" id="newItemTax" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" asp-for="itemView.Job" value="TCC" />
+                                                        <input type="text" class="form-control" id="newItemJob" value="TCC" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" asp-for="itemView.FreightProportion" id="newItemFreight" value="0.00%" onKeyup="this.value=this.value.replace(/[^0-9][.][^0-9]/g,'');" />
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" id="newAddBtn" class="btn rounded-pill btn-label-primary" OnClick="AddItem();">Save</button>
+                                                    </td>
+                                                    </form>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-top-dispatch" role="tabpanel">
+                                    
+                                    <div class="row mb-5">
+                                        @if (Model.isClosed)
+                                        {
+                                            <div class="demo-inline-spacing">
+
+                                                <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" disabled>
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Dispatch All</span>
+                                                </button>
+
+                                                 <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" disabled>
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Split Dispatch</span>
+                                                 </button>
+
+                                            </div>                  
+                                        }
+                                        else
+                                        {
+                                            <div class="demo-inline-spacing">
+
+                                                <button class="btn btn-primary" data-bs-toggle="offcanvas" OnClick="DispatchAll('@Model.saleView.InvoiceId');">
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Dispatch All</span>
+                                                </button>
+
+                                                <button class="btn btn-primary" data-bs-toggle="offcanvas" OnClick="NewDispatch('@Model.saleView.InvoiceId');">
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Split Dispatch</span>
+                                                </button>
+
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="row mb-5">
+                                        <div class="col-md-4">
+                                             <table id="disTable" class="table table-bordered table-striped table-hover text-center">
+                                                 <thead>
+                                                    <tr>
+                                                       <th>Period Id</th>
+                                                       <th>Delete</th>
+                                                    </tr>
+                                                 </thead>
+                                                <tbody id="getDispatchList">
+
+                                                 </tbody>
+                                             </table>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            @if (Model.saleView.Status.Equals("Exported"))
+                                            {
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" disabled>
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Picking List</span>
+                                                </button>
+
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" disabled>
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Load Sheet</span>
+                                                </button>
+
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" disabled>
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Delivery Advice</span>
+                                                </button>
+                                            }
+                                            else {
+
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" OnClick="DispatchAction('PickingList')">
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Picking List</span>
+                                                </button>
+
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" OnClick="DispatchAction('LoadSheet')">
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Load Sheet</span>
+                                                </button>
+
+                                                <button class="btn btn-primary d-grid w-100 mb-3" data-bs-toggle="offcanvas" data-bs-target="#sendInvoiceOffcanvas" OnClick="DispatchAction('DeliveryAdvice')">
+                                                    <span class="d-flex align-items-center justify-content-center text-nowrap">Delivery Advice</span>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+
+
+
+                                    <div class="row">
+                                        <form asp-action="DispatchAction" asp-controller="Sales" method="POST" id="dispatchForm" target="_blank">
+                                            @if (Model.isNew)
+                                            {
+                                                <input type="hidden" id="invoiceId" asp-for="invoiceId" />
+                                            }
+                                            else
+                                            {
+                                                <input type="hidden" id="invoiceId" value="@Model.saleView.InvoiceId" asp-for="invoiceId" />
+                                            }
+                                            <input type="hidden" id="dispatchId" asp-for="dispatchId" />
+                                            <input type="hidden" id="dispatchActionType" asp-for="dispatchActionType" />
+                                        </form>
+                                     
+
+                                        <!-- /.col -->
+                                        <div class="col-sm-12" style="height:100%;">
+                                            <div class="row">
+                                                <div class="col-lg-6 col-md-6 col-sm-6 mb-3">
+                                                    <div class="form-group">
+                                                        <div class="radio">
+                                                            <label  style="margin-right:10px;">
+                                                                <input type="radio" class="form-check-input" name="disRadio" id="disRadioMerc" value="DisMercCode" checked OnClick="SwitchCode(this.value);">
+                                                                Merc Product Code
+                                                            </label>
+                                                            <label>
+                                                                <input type="radio" class="form-check-input" name="disRadio" id="disRadioComp" value="DisCompCode" OnClick="SwitchCode(this.value);">
+                                                                Company Product Code
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row ml-3">
+                                               <div class="col-md-12">
+                                                    <table id="disItemTable" class="table table-bordered table-striped table-hover text-center">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Sort</th>
+                                                                <th class="col-lg-3 col-md-3 col-sm-3">
+                                                                    <span name="DisMercCode">Merc Code</span>
+                                                                    <span name="DisCompCode" hidden>Cust Code</span>
+                                                                </th>
+                                                                <th class="col-lg-3 col-md-3 col-sm-3">
+                                                                    <span name="DisMercCode">Merc Desc</span>
+                                                                    <span name="DisCompCode" hidden>Cust Desc</span>
+                                                                </th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Ordered</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Unfilled</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Dispatch</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Temp</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Grower</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Best Before</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="distBody">
+                                                        </tbody>
+                                                    </table>        
+                                               </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-top-claims" role="tabpanel">
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-top-freight" role="tabpanel">
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-top-messages" role="tabpanel">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Send Email -->
+<div class="modal fade" id="modal-email">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Send Email</h4>
+            </div>
+            <div class="modal-body">
+                <br />
+                <label>Email Group</label>
+                <select class="form-control select2" id="selEmail">
+                    @foreach (var email in Model.emailList)
+                    {
+                        <option value="@email.Id">@email.GroupName</option>
+                    }
+                </select>
+                <br />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal" OnClick="SendEmail();">Send</button>
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+@if (Model.isNew)
+{
+    <input type="hidden" id="invId" />
+}
+else
+{
+    <input type="hidden" id="invId" value="@Model.saleView.InvoiceId" />
+}
+
+<input type="hidden" id="pageType" value="Profile" />
+
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+@section PageScripts
+    {
+    <script>
+        $(function () {
+            //Menu Active
+            MenuActive("", "Sales", "SalesList");
+
+        @if (!Model.isNew)
+        {
+            @Html.Raw("GetDispatchList('" + Model.saleView.InvoiceId + "');");
+        }
+
+        });
+
+        //Date
+        $('#deliveryDate').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        $('#arrivalDate').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function SendEmail() {
+            var sendType = "Invoice";
+            var sendTo = document.getElementById('selEmail').value;
+            var invoiceId = document.getElementById('invId').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Email/SendEmailWithAttacnment?sendType=" + sendType + "&sendTo=" + eval(sendTo) + "&targetId=" + eval(invoiceId),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    Swal.fire("Send", "", "success");
+                    location.reload(true);
+                }
+            });
+        };
+
+        function ChangePage(pageType) {
+            document.getElementById("pageType").value = pageType;
+        };
+
+        function GetProductInfo(productId, itemId) {
+            var mercCodeName = "proCode_" + itemId;
+            var mercDescName = "proDesc_" + itemId;
+            var custCodeName = "custCode_" + itemId;
+            var custDescName = "custDesc_" + itemId;
+            var productTax = "itemTax_" + itemId;
+            var taxJson = "itemTaxJson_" + itemId;
+
+            if (itemId == "New") {
+                mercCodeName = "newItemProCode";
+                mercDescName = "newItemProDesc";
+                custCodeName = "newItemCustCode";
+                custDescName = "newItemCustDesc";
+                productTax = "newItemTax";
+                taxJson = "newItemTaxJson";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/API/GetProduct?productId=" + eval(productId),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                    console.log(response);
+                    document.getElementById(mercCodeName).value = response.productId;
+                    document.getElementById(custCodeName).value = response.productId;
+                    document.getElementById(mercDescName).value = response.productDesc;
+                    document.getElementById(custDescName).value = response.customerDesc;
+                    document.getElementById(productTax).value = response.taxName;
+                    document.getElementById(taxJson).value = response.taxName;
+                }
+            });
+        };
+
+        function DeleteModel(type, dataId) {
+            if (type == "Sales") {
+                var titleMsg = "Do you want to remove this Sale Invoice?";
+            }
+            else if (type == "SaleItem") {
+                var titleMsg = "Do you want to remove this Sale Item?";
+            }
+            else if (type == "Dispatch") {
+                var titleMsg = "Do you want to remove this Dispatch Item?";
+            }
+
+            Swal.fire({
+                title: titleMsg,
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Sales/DeleteSale?type=" + type + "&dataId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                if (type == "Sales") {
+                                    location.href = "/Sales/SalesList";
+                                }
+                                else if (type == "SaleItem") {
+                                    location.reload(true);
+                                }
+                                else if (type == "Dispatch") {
+                                    GetDispatchList(document.getElementById('invoiceId').value);
+                                }
+                            }
+                        });
+                    }
+                });
+        };
+
+        function SaveData() {
+            //Valid forms first
+            if (ValidProfile()) {
+                document.getElementById('saleProfile').submit();
+            }
+
+        };
+
+        function GetShipAddress(customerId) {
+            $.ajax({
+                type: "POST",
+                url: "/API/GetShipList?customerId=" + customerId,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    $("#shipTo option").remove();
+
+                    var str;
+
+                    for (var i = 0; i < response.length; ++i) {
+                        console.log(response[i]);
+                        str += '<option value="' + response[i].id + '">' + response[i].street + ' ' + response[i].city + ' ' + response[i].state + ' ' + response[i].postcode + '</option>';
+                    }
+
+                    str += '<option value="" />';
+
+                    document.getElementById("shipTo").innerHTML = str;
+                }
+            });
+        };
+
+        function GetArrivalDate(arrivalDate) {
+
+            document.getElementById('arrivalDate').value = arrivalDate;
+        };
+
+        function GetDispatchList(invId) {
+            var url = "/Sales/GetDispatchList?invId=" + invId;
+            $.get(url, function (data) {
+                emptyDispatchTable();
+                GetFirstDispatchId(invId);
+                $('#getDispatchList').html(data);
+            });
+        };
+
+        function GetDispatchDetails(dispatchId) {
+            document.getElementById('dispatchId').value = dispatchId;
+
+            var url = "/Sales/GetDispatchDetails?dispatchId=" + eval(dispatchId);
+            $.get(url, function (data) {
+                emptyDispatchTable();
+                $('#distBody').html(data);
+            });
+        };
+
+        function CalcTotalItem(itemId) {
+            var type = document.getElementById("type").value;
+
+            if (ValidCalc(itemId)) {
+                if (itemId == "New") {
+                    var qty = document.getElementById('newItemInvQty').value;
+                    var price = document.getElementById('newItemPrice').value;
+                    var taxcode = document.getElementById('newItemTax').value;
+
+                    if (type.includes('Claim')) {
+                        if (qty > 0) {
+                            qty = qty * -1;
+                            document.getElementById('newItemInvQty').value = qty;
+                        }
+                    }
+
+                    var total = qty * price;
+
+                    if (taxcode == "GST") {
+                        total = total * 0.9;
+                    }
+
+                    document.getElementById('newItemInvTotal').value = total;
+                }
+                else {
+                    var qtyName = "invQty_" + itemId;
+                    var priceName = "invPrice_" + itemId;
+                    var totalName = "invTotal_" + itemId;
+                    var taxcodeName = "itemTax_" + itemId;
+
+                    var qty = document.getElementById(qtyName).value;
+                    var price = document.getElementById(priceName).value;
+                    var taxcode = document.getElementById('newItemTax').value;
+
+                    if (price.split('$').length > 0) {
+                        price = price.split('$')[0];
+                    }
+
+                    if (type.includes('Claim')) {
+                        if (qty > 0) {
+                            qty = qty * -1;
+                            document.getElementById(qtyName).value = qty;
+                        }
+                    }
+
+                    var total = qty * price;
+
+                    if (taxcode == "GST") {
+                        total = total * 0.9;
+                    }
+
+                    document.getElementById(totalName).value = total;
+
+                    var returnVal = itemId + "_" + qty + "_" + price;
+
+                    console.log(returnVal);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/Sales/ChangeItemTotal?total=" + returnVal,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                        }
+                    });
+                }
+            }
+        }
+
+        function ValidProfile() {
+            var returnVal = true;
+
+            if (document.getElementById('type').value == "") {
+                FocusMessages('type', 'Type');
+                returnVal = false;
+            }
+
+            if (document.getElementById('customer').value == "") {
+                FocusMessages('customer', 'Customer');
+                returnVal = false;
+            }
+
+            if (document.getElementById('custpo').value == "") {
+                FocusMessages('custpo', 'Customer PO');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function ValidCalc(itemId) {
+            var returnVal = true;
+
+            if (itemId == "New") {
+                if (document.getElementById('newItemInvQty').value == "") {
+                    returnVal = false;
+                }
+
+                if (document.getElementById('newItemPrice').value == "") {
+                    returnVal = false;
+                }
+            }
+            else {
+                var qtyName = "invQty_" + itemId;
+                var priceName = "invPrice_" + itemId;
+
+                if (document.getElementById(qtyName).value == "") {
+                    FocusMessages(qtyName, 'Quantity');
+                    returnVal = false;
+                }
+
+                if (document.getElementById(priceName).value == "") {
+                    FocusMessages(priceName, 'Price');
+                    returnVal = false;
+                }
+            }
+
+            return returnVal;
+        };
+
+        function FocusMessages(focusId, dataName) {
+            Swal.fire({
+                title: "Invalid Details",
+                text: "You have entered an invalid " + dataName + "\nPlease check and enter again.",
+                icon: "error",
+            });
+
+            setTimeout(() => { document.getElementById(focusId).focus(); }, 1000);
+        };
+
+        function SwitchCode(codeType) {
+            if (codeType == "MercCode") {
+                var mercElements = document.getElementsByName('MercCode');
+                var compElements = document.getElementsByName('CompCode');
+
+                for (var i = 0; i < mercElements.length; i++) {
+                    mercElements[i].hidden = false;
+                }
+
+                for (var j = 0; j < compElements.length; j++) {
+                    compElements[j].hidden = true;
+                }
+            }
+            else if (codeType == "CompCode") {
+                var mercElements = document.getElementsByName('MercCode');
+                var compElements = document.getElementsByName('CompCode');
+
+                for (var i = 0; i < mercElements.length; i++) {
+                    mercElements[i].hidden = true;
+                }
+
+                for (var j = 0; j < compElements.length; j++) {
+                    compElements[j].hidden = false;
+                }
+            }
+            else if (codeType == "DisMercCode") {
+                var mercElements = document.getElementsByName('DisMercCode');
+                var compElements = document.getElementsByName('DisCompCode');
+
+                for (var i = 0; i < mercElements.length; i++) {
+                    mercElements[i].hidden = false;
+                }
+
+                for (var j = 0; j < compElements.length; j++) {
+                    compElements[j].hidden = true;
+                }
+            }
+            else if (codeType == "DisCompCode") {
+                var mercElements = document.getElementsByName('DisMercCode');
+                var compElements = document.getElementsByName('DisCompCode');
+
+                for (var i = 0; i < mercElements.length; i++) {
+                    mercElements[i].hidden = true;
+                }
+
+                for (var j = 0; j < compElements.length; j++) {
+                    compElements[j].hidden = false;
+                }
+            }
+        };
+
+        function RemoveTableRows(tdobyName) {
+
+            var targetBody = document.getElementById(tdobyName);
+
+            if (targetBody.rows.length > 0) {
+                while (targetBody.rows.length > 0) {
+                    targetBody.deleteRow(0);
+                }
+            }
+        };
+
+        function NewDispatch(invId) {
+            var url = "/Sales/NewDispatch?invId=" + eval(invId);
+            $.get(url, function (data) {
+                GetDispatchList(invId);
+
+                emptyDispatchTable();
+                $('#distBody').html(data);
+            });
+        };
+
+        function DispatchAll(invId) {
+            var url = "/Sales/DispatchAll?invId=" + eval(invId);
+            $.get(url, function (data) {
+                GetDispatchList(invId);
+
+                emptyDispatchTable();
+                $('#distBody').html(data);
+            });
+        };
+
+        function DispatchAction(DisType) {
+            var dispatchId = document.getElementById('dispatchId').value;
+
+            if (dispatchId == "" || dispatchId == 0) {
+                Swal.fire({
+                    title: "Please select dispatch.",
+                    text: "",
+                    icon: "error",
+                });
+            }
+            else {
+                document.getElementById('dispatchActionType').value = DisType;
+                document.getElementById('dispatchForm').submit();
+            }
+        };
+
+        function AddItem() {
+            if (ValidItemData()) {
+                document.getElementById("NewItemForm").submit();
+            }
+        };
+
+        function AddRows(response) {
+            var disTbody = document.getElementById('distBody');
+
+            for (var rowNum = 0; rowNum < response.length; rowNum++) {
+                var row = disTbody.insertRow(rowNum);
+
+                var cell0 = row.insertCell(0);
+                var cell1 = row.insertCell(1);
+                var cell2 = row.insertCell(2);
+                var cell3 = row.insertCell(3);
+                var cell4 = row.insertCell(4);
+                var cell5 = row.insertCell(5);
+                var cell6 = row.insertCell(6);
+                var cell7 = row.insertCell(7);
+                var cell8 = row.insertCell(8);
+
+                cell0.innerHTML = response[rowNum].sortId;
+                cell3.innerHTML = response[rowNum].customerCode;
+                cell4.innerHTML = response[rowNum].ordered;
+                cell5.innerHTML = response[rowNum].unfilled;
+                cell6.innerHTML = response[rowNum].dispatch;
+                cell7.innerHTML = response[rowNum].grower;
+                cell8.innerHTML = response[rowNum].stringBestBefore;
+
+                var span1 = document.createElement('span');
+                span1.setAttribute("name", "DisMercCode");
+                span1.innerHTML = response[rowNum].productCode;
+
+                var span2 = document.createElement('span');
+                span2.setAttribute("name", "DisCompCode");
+                span2.hidden = true;
+                span2.innerHTML = response[rowNum].customerCode;
+
+                var span3 = document.createElement('span');
+                span3.setAttribute("name", "DisMercDesc");
+                span3.innerHTML = response[rowNum].productDesc;
+
+                var span4 = document.createElement('span');
+                span4.setAttribute("name", "DisCompDesc");
+                span4.hidden = true;
+                span4.innerHTML = response[rowNum].customerDesc;
+
+                cell1.appendChild(span1);
+                cell1.appendChild(span2);
+
+                cell2.appendChild(span3);
+                cell2.appendChild(span4);
+
+                var qty1 = document.createElement('input');
+                qty1.type = "number";
+                qty1.value = 0;
+                qty1.className = "form-control";
+                qty1.style = "width:80%;";
+
+                var qty2 = document.createElement('input');
+                qty2.type = "number";
+                qty2.value = 0;
+                qty2.className = "form-control";
+                qty2.style = "width:80%;";
+
+                var btn = document.createElement('input');
+                btn.type = "button";
+                btn.className = "btn btn-default";
+                btn.value = "X";
+                btn.onclick = function () { document.getElementById('distBody').deleteRow(eval(disTbody.rows.length - 1)); };
+            }
+
+        };
+
+        function ValidItemData() {
+            var returnVal = true;
+
+            if (document.getElementById('newItemProCode').value == "") {
+                FocusMessages('newItemProCode', 'Product Code');
+                returnVal = false;
+            }
+            else if (document.getElementById('newItemCustCode').value == "") {
+                FocusMessages('newItemCustCode', 'Product Code');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newItemInvQty').value == "") {
+                FocusMessages('newItemInvQty', 'Item Quantity');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newItemPrice').value == "") {
+                FocusMessages('newItemPrice', 'Price');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function FocusMessages(focusId, dataName) {
+            Swal.fire({
+                title: "Invalid Details",
+                text: "You have entered an invalid " + dataName + "\nPlease check and enter again.",
+                icon: "error",
+            });
+
+            setTimeout(() => { document.getElementById(focusId).focus(); }, 1000);
+        };
+
+        function emptyDispatchTable() {
+            var tbody = document.getElementById('distBody');
+            var rowMax = document.getElementById('distBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function ChangeItem(dataType, dataId, changeVal) {
+            $.ajax({
+                type: "POST",
+                url: "/Sales/ChangeDispatchItem?type=" + dataType + "&dataId=" + dataId + "&chgVal=" + changeVal,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) { }
+            });
+        };
+
+        function GetFirstDispatchId(invId) {
+            $.ajax({
+                type: "POST",
+                url: "/Sales/GetFirstDispatchId?invId=" + invId,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    GetDispatchDetails(response);
+                }
+            });
+        };
+
+        function ChangeType(type) {
+            if (type == "PriceClaim" || type == "QualityClaim" || type == "QuantityClaim") {
+                document.getElementById('claimRefTh').innerHTML = "Claim Ref";
+
+                document.getElementById('claimRefListDiv').hidden = false;
+                document.getElementById('claimListTd').hidden = false;
+                document.getElementById('claimRef').hidden = false;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Sales/GetClaimRefList",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        $("#claimRef option").remove();
+
+                        var str;
+
+                        str += '<option value="" />';
+
+                        for (var i = 0; i < response.length; ++i) {
+                            str += '<option value="' + response[i].invoiceId + '">' + response[i].displayOption + '</option>';
+                        }
+
+                        document.getElementById("claimRef").innerHTML = str;
+                    }
+                });
+            }
+            else {
+                document.getElementById('claimRefTh').innerHTML = "";
+
+                document.getElementById('claimRefListDiv').hidden = true;
+                document.getElementById('claimListTd').hidden = true;
+                document.getElementById('claimRef').hidden = true;
+            }
+        };
+
+        function GetClaimDetails(claimId) {
+            $.ajax({
+                type: "POST",
+                url: "/Sales/GetClaimDetails?claimId=" + eval(claimId),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                    $("#shipTo option").remove();
+
+                    var ship = '<option value="' + response.addressId + '">' + response.address + '</option>';
+
+                    document.getElementById("shipTo").innerHTML = ship;
+                    document.getElementById("shipTo").options.selectedIndex = 0;
+
+                    $("#customer option").remove();
+
+                    var cust = '<option value="' + response.custPk + '">' + response.companyName + '</option>';
+
+                    document.getElementById("customer").innerHTML = cust;
+                    document.getElementById("customer").options.selectedIndex = 0;
+
+                    document.getElementById('custpo').value = response.custPo;
+                }
+            });
+        };
+
+        function UpdateData(itemId, dataType, chgVal) {
+            $.ajax({
+                type: "POST",
+                url: "/Sales/UpdateData?itemId=" + itemId + "&dataType=" + dataType + "&chgVal=" + chgVal,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) { }
+            });
+        };
+
+    </script>
+}
+
+
+
+

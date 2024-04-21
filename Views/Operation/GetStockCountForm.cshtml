@@ -1,0 +1,80 @@
+﻿@model List<CarrotSystem.Models.ViewModel.StockCountView>
+@{
+    Layout = "~/Views/Shared/_Layout_Report.cshtml";
+    var groupList = Model.GroupBy(g => new { Group = g.MainGroup })
+                          .Select(s => s.ToList()).ToList();
+}
+
+
+<div class="row">
+    <div class="col-xl-12 col-md-8 col-12 mb-md-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between flex-xl-row flex-md-column flex-sm-row flex-column p-sm-3 p-0">
+                <div class="mb-xl-0 mb-4">
+                    <div class="d-flex svg-illustration mb-3 gap-2">
+                        <img src="~/images/mercorella_ak-02.png" width="200px" />
+                    </div>
+                </div>
+                <div>
+                    <div class="mb-2">
+                        <span class="me-1">Date:</span>
+                        <span class="fw-semibold">@DateTime.Now.Date.ToString("dddd, dd MMM yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0" />
+        @foreach (var group in groupList)
+        {
+            <div class="card-body">
+                <div class="row p-sm-3 p-0">
+                    <div class="col-xl-6 col-md-12 col-sm-5 col-12 mb-xl-0 mb-md-4 mb-sm-0 mb-4">
+                        <p class="mb-1">Group Name: @group.FirstOrDefault()?.MainGroup</p>
+                        <p class="mb-1">Date: @group.FirstOrDefault()?.StockDate.ToString("dd/MM/yy")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table border-top m-0">
+                    <thead>
+                        <tr>
+                            <th>Product Code</th>
+                            <th>Description</th>
+                            <th>Qty</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in group)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@item.ProductCode</td>
+                                <td class="text-nowrap">@item.ProductDesc</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <div class="mb-2">
+                    <span class="me-1">Counted By: </span>
+                    <br />
+                    <span class="fw-semibold">Recorded By: </span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+<script>
+    setTimeout(function () {
+        window.print();
+    }, 2000)
+</script>
+
+

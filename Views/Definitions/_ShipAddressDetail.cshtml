@@ -1,0 +1,121 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewDefinitions
+
+@{
+    Layout = null;
+}
+
+@if (!string.IsNullOrEmpty(Model.shipAddress.AddressName))
+{
+    <form method="POST" asp-action="SaveShippingAddress" asp-controller="Definitions" id="saveShippingForm">
+        <input type="hidden" value="@Model.shipAddress.Id" asp-for="shipAddress.Id" id="shipAddId"/>
+        <input type="hidden" value="@Model.shipAddress.Company" asp-for="shipAddress.Company"/>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Address Name</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.AddressName" type="text" id="shipName" class="form-control" value="@Model.shipAddress.AddressName"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Street</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Street" type="text" id="shipStreet" class="form-control" value="@Model.shipAddress.Street"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">City</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.City" type="text" id="shipCity" class="form-control" value="@Model.shipAddress.City"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">State</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.State" type="text" id="shipState" class="form-control" value="@Model.shipAddress.State"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Post Code</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Postcode" type="text" id="shipPostCode" class="form-control" value="@Model.shipAddress.Postcode"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Country</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Country" type="text" id="shipCountry" class="form-control" value="@Model.shipAddress.Country"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Contact Name</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.ContactName" type="text" id="shipContact" class="form-control" value="@Model.shipAddress.ContactName"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Phone 1</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Phone1" type="text" id="shipPhone1" class="form-control" value="@Model.shipAddress.Phone1"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Phone 2</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Phone2" type="text" id="shipPhone2" class="form-control" value="@Model.shipAddress.Phone2"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Fax</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Fax" type="text" id="shipFax" class="form-control" value="@Model.shipAddress.Fax"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Email</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Email" type="text" id="shipEmail" class="form-control" value="@Model.shipAddress.Email"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">WWW</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Www" type="text" id="shipWWW" class="form-control" value="@Model.shipAddress.Www"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-3 control-label text-right">Comment</label>
+                <div class="col-sm-8 input-group">
+                    <input asp-for="shipAddress.Comment" type="text" id="shipComment" class="form-control" value="@Model.shipAddress.Comment"/>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+else
+{
+    <input type="hidden" value="None" id="shipAddId"/>
+
+    <div class="alert alert-warning">
+        No records for the selected period.
+    </div>
+}
+
+

@@ -1,0 +1,291 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewOperation
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Stock Count";
+    Layout = "_Layout";
+}
+
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                 <div class="row">
+                    <div class="col-sm-2">
+                        <label>Select Date</label>
+                        <select class="form-select" OnChange="GetDataTable(this.value);">
+                            @foreach (var item in Model.periodicList)
+                            {
+                                <option value="@item.PeriodId">@item.TargetDate.ToString("dd/MM/yy")</option>
+                            }
+                        </select>
+                    </div>
+                 </div>
+                 <div class="row mt-4">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <table id="listTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period Id</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Stock Count<br />Period</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listTBody">
+                                @foreach (var item in Model.periodicList)
+                                {
+                                    <tr OnClick="GetDataTable(@item.PeriodId)">
+                                        <td>@item.PeriodId</td>
+                                        <td>@item.TargetDate.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                     
+                    <div class="col-sm-2">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn rounded-pill btn-label-primary" OnClick="newStockCount();">New Count</button>
+                        </div>
+                    </div>
+                       
+                    <div class="col-sm-2">
+                        <form id="countForm" method="POST" asp-action="GetStockCountForm" asp-controller="Operation" target="_blank">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <input type="hidden" id="countId" asp-for="targetId" value="@Model.dataId" />
+                                <button type="button" class="btn rounded-pill btn-label-primary" OnClick="GetPDFform('countForm');">Stock Count Form</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <form id="reportForm" method="POST" asp-action="GetStockCountReport" asp-controller="Operation" target="_blank">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <input type="hidden" id="reportId" asp-for="targetId" value="@Model.dataId" />
+                                <button type="button" class="btn rounded-pill btn-label-primary" OnClick="GetPDFform('reportForm');">Stock Count Report</button>
+                            </div>
+                        </form>
+                    </div> 
+                     
+                    <div class="col-sm-2">
+                        <label>Search :</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchTextbox" value="" />
+                        </div>
+                    </div>
+                     
+                </div>
+                <div class="row mt-4">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Stock Count<br />Period</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Product<br />Code</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Product<br />Desc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Qty.</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Batch Code</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Date Counted</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="dataTBody"></tbody>
+                            <tbody id="newTBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Operation", "StockCount");
+
+        $(document).ready(function () 
+        {
+            //list Table
+            var listTable = $('#listTable').DataTable({
+                order: [[0, 'desc'], [1, 'desc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 150
+            });
+
+            $('#newTBody').hide();
+        });
+
+        function GetDataTable(periodId) 
+        {
+            document.getElementById("reportId").value = periodId;
+            document.getElementById("countId").value = periodId;
+
+            $("#loadingPage").fadeIn();
+
+            var url = "/Operation/GetStockCountList?periodId=" + periodId;
+            $.get(url, function (data) {
+                emptyDataTable();
+                $('#dataTBody').html(data);
+                $('#newTBody').hide();
+                $('#dataTBody').show();
+
+                $("#loadingPage").fadeOut();
+            });
+        };
+
+        function DeletePacking(dataId) 
+        {
+            Swal.fire({
+                title: "Do you want to close this Stock Count?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Operation/DeletePacking?packingId=" + eval(dataId),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                            location.reload(true);
+                        }
+                    });
+
+                }
+            });
+        };
+
+        function emptyNewTable() 
+        {
+            var tbody = document.getElementById('newTBody');
+            var rowMax = document.getElementById('newTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function emptyDataTable() 
+        {
+            var tbody = document.getElementById('dataTBody');
+            var rowMax = document.getElementById('dataTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function setDataTable(dataList) 
+        {
+            var tbody = document.getElementById('dataTBody');
+
+            for (var i = 0; i < dataList.length; i++) {
+                var row = tbody.insertRow(tbody.rows.length);
+
+                var cell0 = row.insertCell(0);
+                var cell1 = row.insertCell(1);
+                var cell2 = row.insertCell(2);
+                var cell3 = row.insertCell(3);
+                var cell4 = row.insertCell(4);
+                var cell5 = row.insertCell(5);
+
+                cell0.innerHTML = dataList[i].stockDateString;
+                cell1.innerHTML = dataList[i].productCode;
+                cell2.innerHTML = dataList[i].productDesc;
+                cell3.innerHTML = dataList[i].productQty;
+                cell4.innerHTML = dataList[i].batchCode;
+
+                var btn = document.createElement('input');
+                btn.type = "button";
+                btn.className = "btn btn-default";
+                btn.value = "X";
+
+                cell5.appendChild(btn);
+            }
+        };
+
+        function newStockCount() 
+        {
+            var url = "/Operation/GetNewStockCountList";
+            $.get(url, function (data) {
+                emptyNewTable();
+                $('#newTBody').html(data);
+                $('#newTBody').show();
+                $('#dataTBody').hide();
+
+                $("#loadingPage").fadeOut();
+            });
+        };
+
+        function ChangeItem(dataType, dataId, changeVal) 
+        {
+            setTimeout(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/Operation/ChangeCountItem?type=" + dataType + "&dataId=" + dataId + "&chgVal=" + changeVal,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+
+                        Swal.fire({
+                            title: "Count Saved Success",
+                            icon: "success",
+                            buttons: false
+                        })
+                    }
+                });
+            },3000)
+        };
+
+        function GetPDFform(formName) 
+        {
+            if (formName == "countForm") 
+            {
+                var targetId = document.getElementById("countId").value;
+            }
+            else if (formName == "reportForm") 
+            {
+                var targetId = document.getElementById("reportId").value;
+            }
+
+            if(targetId != null)
+            {
+                document.getElementById(formName).submit();
+            }
+        };
+    </script>
+
+}

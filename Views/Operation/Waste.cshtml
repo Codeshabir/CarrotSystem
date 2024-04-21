@@ -1,0 +1,386 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewOperation
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Waste";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row"> 
+                    <div class="col-md-2">
+                        <label>Select Date</label>
+                        <select class="form-select" onclick="GetDataTable(this.value);">
+                            <option value=""></option>
+                            @foreach (var item in Model.periodicList.OrderByDescending(o => o.TargetDate).ToList())
+                            {
+                                <option value="@item.TargetDate.ToString("ddMMyyyy")">@item.TargetDate.ToString("dd/MM/yy")</option>
+                            }
+                        </select>
+                    </div> 
+                </div>
+
+                <div class="row mt-4"> 
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <table id="listTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Transfer<br />Date</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period Id</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listTBody">
+                                @foreach (var item in Model.periodicList)
+                                {
+                                    <tr id="hgTr_@item.TargetDate.ToString("ddMMyyyy")" onclick="GetDataTable('@item.TargetDate.ToString("ddMMyyyy")')">
+                                        <td>@item.TargetDate.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                        <td>@item.PeriodId</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-2 form-group">
+                        <label>Waste Date</label>
+                        <div class="input-group" style="width:100%;">
+                            <div class="input-group-addon"></div>
+                            <input id="targetDate" type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                        </div>
+                    </div>
+                    <div class="col-sm-2 form-group text-right">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button class="btn rounded-pill btn-label-primary" OnClick="NewItem();">New Waste</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Waste<br />Date</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Product<br />Code</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Product<br />Desc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Supplier</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Reason</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="dataTBody">
+                            </tbody>
+                            <tbody id="newTBody">
+                                <tr>
+                                    <form method="POST" asp-action="NewWaste" asp-controller="Operation" id="newRowForm">
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <input id="newRowDate" type="text" class="form-control text-center" style="padding:0;" disabled />
+                                            <input id="newRowDateString" type="hidden" asp-for="newWaste.WasteDateString" />
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <select class="form-select" id="newRowProduct" OnChange="GetProductDesc(this.value);" asp-for="newWaste.ProductId">
+                                                <option value=""></option>
+                                                    @foreach (var product in Model.productList)
+                                                    {
+                                                    <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                    }
+                                            </select>
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <input id="newRowProductDesc" type="text" class="form-control" value="" style="vertical-align:middle;" disabled />
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <input id="newRowQty" type="text" class="form-control" value="" asp-for="newWaste.ProductQty" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" />
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <select id="newRowSupplier" class="form-select" asp-for="newWaste.SupplierId">
+                                                <option value=""></option>
+                                                    @foreach (var sup in Model.supplierList)
+                                                    {
+                                                    <option value="@sup.Pk">@sup.CompanyName</option>
+                                                    }
+                                            </select>
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                            <select class="form-control" id="newRowDesc" asp-for="newWaste.Reason">
+                                                    @foreach (var reason in Model.reasonList.OrderBy(o => o.SortId))
+                                                    {
+                                                    <option value="@reason.Reason">@reason.Reason</option>
+                                                    }
+                                            </select>
+                                        </td>
+                                        <td class="col-lg-1 col-md-1 col-sm-1">
+                                             <button type="button" id="newRowSave" class="btn rounded-pill btn-label-primary" OnClick="SaveNewRow();">Save</button>
+                                        </td>
+                                    </form>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Operation", "Waste");
+
+        $(document).ready(function () {
+             
+            //list Table
+            $('#listTable').DataTable({
+                order: [[2, 'desc'], [0, 'desc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 150
+            });
+
+            @if (!string.IsNullOrEmpty(Model.focusDate))
+            {
+                @Html.Raw("GetDataTable('" + Model.focusDate + "')");
+            }
+
+            $('#newTBody').hide();
+        });
+
+        //Date
+        $('#targetDate').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function GetDataTable(target) 
+        {
+            var url = "/Operation/GetWasteList?target=" + target;
+            $.get(url, function (data) {
+                emptyDataTable();
+                $('#dataTBody').html(data);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/API/IsClosedPeriod?targetDate=" + target,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        if (response == "Closed") {
+                            $('#newTBody').hide();
+                        }
+                        else {
+                            var year = target.split('')[4] + target.split('')[5] + target.split('')[6] + target.split('')[7];
+                            var month = target.split('')[2] + target.split('')[3];
+                            var day = target.split('')[0] + target.split('')[1];
+                            var targetDate = day + "/" + month + "/" + year;
+
+                            document.getElementById('newRowDate').value = targetDate;
+                            document.getElementById('newRowDateString').value = targetDate;
+
+                            $('#newTBody').show();
+                        }
+                    }
+                });
+            });
+        };
+
+        function ChangeValue(itemId, type, chgVal) 
+        {
+            if (type == "ProductCode") 
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "/API/GetProduct?productId=" + chgVal,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        var changeId = "ProductDesc_" + itemId;
+                        document.getElementById(changeId).innerHTML = response.productDesc;
+                    }
+                });
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Operation/ChangeWaste?itemId=" + eval(itemId) + "&type=" + type + "&chgValue=" + chgVal,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {}
+            });
+        };
+
+        function DeleteModel(dataId) {
+            Swal.fire({
+                title: "Do you want to close this Waste?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) 
+                    {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Operation/DeleteItem?type=Waste&itemId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) 
+                            {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function emptyDataTable() 
+        {
+            var tbody = document.getElementById('dataTBody');
+            var rowMax = document.getElementById('dataTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+
+        };
+
+        function setDataTable(dataList) 
+        {
+            var tbody = document.getElementById('dataTBody');
+
+            for (var i = 0; i < dataList.length; i++) {
+                var row = tbody.insertRow(tbody.rows.length);
+
+                var cell0 = row.insertCell(0);
+                var cell1 = row.insertCell(1);
+                var cell2 = row.insertCell(2);
+                var cell3 = row.insertCell(3);
+                var cell4 = row.insertCell(4);
+                var cell5 = row.insertCell(5);
+                var cell6 = row.insertCell(6);
+
+                cell0.innerHTML = dataList[i].wasteDateString;
+                cell1.innerHTML = dataList[i].productCode;
+                cell2.innerHTML = dataList[i].productDesc;
+                cell3.innerHTML = dataList[i].qty;
+                cell4.innerHTML = dataList[i].supplier;
+                cell5.innerHTML = dataList[i].reason;
+
+                var btn = document.createElement('input');
+                btn.type = "button";
+                btn.className = "btn btn-default";
+                btn.value = "X";
+
+                cell6.appendChild(btn);
+            }
+        };
+
+        function NewItem() 
+        {
+            emptyDataTable();
+
+            var targetDate = document.getElementById('targetDate').value;
+            document.getElementById('targetDate').setAttribute("disabled", "disabled");
+
+            document.getElementById('newRowDate').value = targetDate;
+            document.getElementById('newRowDateString').value = targetDate;
+
+            $('#newTBody').show();
+        };
+
+        function GetProductDesc(productId) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/API/GetProduct?productId=" + productId,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) 
+                {
+                    document.getElementById('newRowProductDesc').value = response.productDesc;
+                }
+            });
+        };
+
+        function SaveNewRow() 
+        {
+            if (ValidNew()) 
+            {
+                document.getElementById('newRowForm').submit();
+            }
+        };
+
+        function ValidNew() 
+        {
+            var returnVal = true;
+
+            if (document.getElementById('newRowProduct').value == "") {
+                FocusMessages('newRowProduct', 'Product Code');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newRowQty').value == "") {
+                FocusMessages('newRowQty', 'Quantity');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newRowSupplier').value == "") {
+                FocusMessages('newRowSupplier', 'Supplier');
+                returnVal = false;
+            }
+
+            if (document.getElementById('newRowDesc').value == "") {
+                FocusMessages('newRowDesc', 'Reason');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function FocusMessages(focusId, dataName) 
+        {
+            Swal.fire({
+                title: "Invalid Details, " + dataName,
+                text: "You have entered an invalid " + dataName + "\nPlease check and enter again.",
+                icon: "error",
+            });
+
+            setTimeout(() => { document.getElementById(focusId).focus(); }, 1000);
+        };
+
+    </script>
+}

@@ -1,0 +1,27 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewMYOB
+
+@{
+    Layout = null;
+}
+
+@if (Model.exportPurchasesList.Count > 0)
+{
+    @foreach (var log in Model.exportPurchasesList)
+    {
+        <tr>
+            <td>@log.InvoiceID</td>
+            <td>@log.DateBy.ToString("dd/MM/yyyy")</td>
+            <td>@log.CoLastName</td>
+            <td>@log.ItemNO</td>
+            <td>@log.Qty</td>
+            <td>@log.Price</td>
+            <td>@log.TaxCode</td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+       <td colspan="7"> No records for the selected period.</td>
+    </tr>
+}

@@ -1,0 +1,72 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewHistory
+
+@{
+    ViewBag.Title = "Email History";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card"> 
+            <div class="card-body">
+                <table id="dataTable" class="table table-hover table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sent Date</th>
+                            <th>Sent By</th>
+                            <th>Email Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.eventList)
+                        {
+                            <tr>
+                                <td>
+                                    @item.EventDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td>
+                                    @item.EventBy
+                                </td>
+                                <td>
+                                    @item.EventDesc
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Home", "EmailHistory");
+
+        //DataTable Configuration
+        $('#dataTable').DataTable({
+            'paging': true,
+            'lengthChange': false,
+            'pageLength': 50,
+            'searching': true,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[0, 'asc']]
+        });
+
+    </script>
+}
+
+
+
+
+
+
+

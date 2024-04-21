@@ -1,0 +1,197 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor 
+
+<aside id="layout-menu" class="layout-menu-horizontal menu-horizontal menu bg-menu-theme flex-grow-0">
+    <div class="container-xxl d-flex h-100">
+        <ul class="menu-inner"> 
+
+            <li class="menu-item">
+                <a href="/Home/Dashboard" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                    <div data-i18n="Dashboard">Dashboard</div>
+                </a>
+            </li>
+
+
+            <li class="menu-item">
+                <a href="/Sales/SalesList" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                    <div data-i18n="Sales">Sales</div>
+                </a> 
+            </li>
+
+            <!-- Layouts -->
+            <li class="menu-item">
+                <a href="javascript:void(0)" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+                    <div data-i18n="Purchase">Purchase</div>
+                </a>
+
+                <ul class="menu-sub">
+                    <li class="menu-item">
+                        <a href="/Purchases/PurchaseList" class="menu-link"> 
+                            <div data-i18n="Purchase List">Purchase List</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/POF/PurchaseOrderList" class="menu-link" > 
+                            <div data-i18n="PO List">PO List</div>
+                        </a>
+                    </li> 
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <a href="/Operation/Packing" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-package"></i>
+                    <div data-i18n="Packing">Packing</div>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a href="/Operation/ProductTransfer" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-transfer"></i>
+                    <div data-i18n="Transfer">Transfer</div>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a href="/Operation/Waste" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-trash"></i>
+                    <div data-i18n="Waste">Waste</div>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a href="/Operation/StockCount" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-box"></i>
+                    <div data-i18n="Stock Count">Stock Count</div>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a href="javascript:void(0)" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-file"></i>
+                    <div data-i18n="Reports">Reports</div>
+                </a>
+
+                <ul class="menu-sub">
+                    <li class="menu-item">
+                        <a href="/Reports/RawProduceList" class="menu-link"> 
+                            <div data-i18n="Raw Produce">Raw Produce</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Reports/IPProduceList" class="menu-link" >
+                            <div data-i18n="IP Produce">IP Produce</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Reports/IFProduceList" class="menu-link" >
+                            <div data-i18n="IF Produce">IF Produce</div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <a href="javascript:void(0)" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-cog"></i>
+                    <div data-i18n="Settings">Settings</div>
+                </a>
+
+                <ul class="menu-sub">
+                    <li class="menu-item">
+                        <a href="/Definitions/CompanyList" class="menu-link">
+                            <div data-i18n="Company">Company</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Definitions/ProductList" class="menu-link">
+                            <div data-i18n="Product">Product</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="Definitions" asp-action="ProductsDetails" asp-route-id="New" class="menu-link">
+                            <div data-i18n="New Product">New Product</div>
+                        </a>
+                    </li> 
+                    
+                    <li class="menu-item">
+                        <a href="/Advanced/PeriodList" class="menu-link">
+                            <div data-i18n="Periods">Periods</div>
+                        </a>
+                    </li>
+                    
+                    
+                    @if (HttpContextAccessor.HttpContext.User.IsInRole("SystemAdmin") || HttpContextAccessor.HttpContext.User.IsInRole("Manager") || HttpContextAccessor.HttpContext.User.IsInRole("Supervisor"))
+                    {
+                        <li class="menu-item">
+                            <a href="/Home/EmailHistory" class="menu-link">
+                                <div data-i18n="Email History">Email History</div>
+                            </a>
+                        </li>
+
+                        <li class="menu-item">
+                            <a href="/Home/UsersList" class="menu-link">
+                                <div data-i18n="Users">Users</div>
+                            </a>
+                        </li>
+
+                        <li class="menu-item">
+                            <a href="/Home/EmailGroup" class="menu-link">
+                                <div data-i18n="Email Group">Email Group</div>
+                            </a>
+                        </li>
+                 } 
+                   
+
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <a href="javascript:void(0)" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-calculator"></i>
+                    <div data-i18n="Accounting">Accounting</div>
+                </a>
+
+                <ul class="menu-sub">
+                    <li class="menu-item">
+                        <a href="/Accounting/Expenses" class="menu-link">
+                            <div data-i18n="Expenses">Expenses</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Accounting/CalculateList" class="menu-link">
+                            <div data-i18n="Calculate">Calculate</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Authorization/Index" class="menu-link">
+                            <div data-i18n="XERO">XERO</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/MYOB/ExportTCC" class="menu-link">
+                            <div data-i18n="MYOB">MYOB</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="/Advanced/TaxRates" class="menu-link">
+                            <div data-i18n="Tax Rates">Tax Rates</div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <a href="/Audit/EventViewer" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-mouse-alt"></i>
+                    <div data-i18n="Event Viewer">Event Viewer</div>
+                </a>
+            </li>
+
+
+        </ul>
+    </div>
+</aside>

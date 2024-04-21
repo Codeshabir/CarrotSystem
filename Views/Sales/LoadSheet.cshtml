@@ -1,0 +1,89 @@
+﻿@model CarrotSystem.Models.ViewModels.PickingListViewModel
+@{
+    ViewBag.Title = "Picking list";
+    Layout = "_Layout_Report";
+    var totalItem = 0;
+}
+
+<div class="row">
+    <div class="col-xl-12 col-md-8 col-12 mb-md-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between flex-xl-row flex-md-column flex-sm-row flex-column p-sm-3 p-0">
+                <div class="mb-xl-0 mb-4">
+                    <div class="d-flex svg-illustration mb-3 gap-2">
+                        <img src="~/images/mercorella_ak-02.png" width="200px" />
+                    </div>
+                </div>
+                <div>
+                    <h4>Invoice #@Model.DispatchView.InvoiceId</h4>
+                    <div class="mb-2">
+                        <span class="me-1">Date:</span>
+                        <span class="fw-semibold">@Model.DispatchView.DispatchDate.ToString("dddd, dd MMM yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0" />
+        <div class="card-body">
+            <div class="row p-sm-3 p-0">
+                <div class="col-xl-6 col-md-12 col-sm-5 col-12 mb-xl-0 mb-md-4 mb-sm-0 mb-4">
+                    <p class="mb-1">Cust PO:  @Model.DispatchView.CustPO</p>
+                    <p class="mb-1">Customer: @Model.DispatchView.CustomerName</p>
+                    <p class="mb-1">Shipping Address: @Model.DispatchView.ShippingAddress</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table border-top m-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.DispatchViewList)
+                    {
+                        totalItem = totalItem + (int)item.Ordered;
+
+                        <tr>
+                            <td class="text-nowrap">@item.ProductCode</td>
+                            <td class="text-nowrap">@item.ProductDesc</td>
+                            <td>@item.Ordered</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td>Total Items </td>
+                        <td>@totalItem</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <br />
+        <br />
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <span class="fw-semibold">Comments: @Model.DispatchView.Comment</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <span class="fw-semibold">Checked By:</span>
+                    <hr />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    setTimeout(function () {
+        window.print();
+    }, 2000)
+</script>

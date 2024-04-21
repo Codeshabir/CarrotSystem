@@ -1,0 +1,79 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewAdvanced
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Tax Rates";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                 
+            </div>
+            <div class="card-body">
+                 <div class="row">
+                    <table id="dataTable" class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Code</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Rate</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Updated On</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Updated By</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.taxrateList)
+                            {
+                                <tr>
+                                    <td>@item.Code</td>
+                                    <td>@String.Format("{0:0.###}", item.Rate)</td>
+
+                                    @if (item.UpdatedOn.HasValue)
+                                    {
+                                        <td>@item.UpdatedOn</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+
+                                    <td>@item.UpdatedBy</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Advanced", "TaxRates");
+
+        $(document).ready(function () {
+
+            //Data Table
+            $('#dataTable').DataTable({
+                'paging': false,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 25
+            });
+        });
+
+    </script>
+}

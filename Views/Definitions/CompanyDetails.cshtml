@@ -1,0 +1,1008 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewDefinitions
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = Model.pageTitle + " Company";
+    Layout = "_Layout";
+}
+ 
+<div class="row">
+    <div class="col-md-2">
+        <h4 class="py-3 breadcrumb-wrapper mb-4">
+            @ViewBag.Title
+        </h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="card invoice-preview-card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8 mt-2">
+                    <div class="demo-inline-spacing">
+                        <button type="button" class="btn rounded-pill btn-label-primary" OnClick="SaveData();">Save</button>
+                        <a class="btn rounded-pill btn-label-primary" href="/Definitions/CompanyList">Close</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12"> 
+        <div class="nav-align-top mb-4">
+            <ul class="nav nav-pills mb-3 nav-fill" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="add_tab_1_btn" onclick="ChangePage('Details')" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-details" aria-controls="navs-pills-justified-home" aria-selected="true">
+                       Details 
+                    </button>
+                </li>
+ 
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="add_tab_2_btn" onclick="ChangePage('Billing')" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-billing-address" aria-controls="navs-pills-justified-profile" aria-selected="false" tabindex="-1">
+                      Billing Address
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="add_tab_3_btn" onclick="ChangePage('Shipping')" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-shipping-address" aria-controls="navs-pills-justified-messages" aria-selected="false" tabindex="-1">
+                       Shipping Address
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="add_tab_4_btn" onclick="ChangePage('Mapping')" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-product-mapping" aria-controls="navs-pills-justified-messages" aria-selected="false" tabindex="-1">
+                        Product Mapping
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="add_tab_5_btn" onclick="ChangePage('More')" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-more" aria-controls="navs-pills-justified-messages" aria-selected="false" tabindex="-1">
+                      More
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="navs-pills-details" role="tabpanel">
+                    <form method="POST" asp-action="SaveCompany" asp-controller="Definitions" id="saveDetailsForm">
+                        <input type="hidden" value="Details" asp-for="targetModel.PageType" />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group  mt-4">
+                                    <label class="col-sm-3 control-label text-right">Company Name</label>
+                                    <div class="col-sm-4 input-group">
+                                        @if (Model.pageTitle.Equals("New"))
+                                        {
+                                            <input type="hidden" value="New" id="compDetailType" />
+                                            <input type="text" id="compName" class="form-control" placeholder="" asp-for="targetModel.CompanyName" />
+                                            <input type="hidden" id="compPk" value="New" asp-for="targetModel.CompPK" />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" value="Edit" id="compDetailType" />
+                                            <input type="text" id="compName" class="form-control" placeholder="" value="@Model.company.CompanyName" asp-for="targetModel.CompanyName" disabled />
+                                            <input type="hidden" id="compPk" value="@Model.company.Pk" asp-for="targetModel.CompPK" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mt-4">
+                                    <label class="col-sm-3 control-label text-right">ABN</label>
+                                    <div class="col-sm-4 input-group">
+                                        @if (Model.pageTitle.Equals("New"))
+                                        {
+                                            <input type="text" id="compAbn" class="form-control" placeholder="" asp-for="targetModel.Abn" />
+                                        }
+                                        else
+                                        {
+                                            <input type="text" id="compAbn" class="form-control" placeholder="" value="@Model.company.Abn" asp-for="targetModel.Abn" />
+                                        }
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group  mt-4">
+                                    <label class="col-sm-3 control-label text-right">Type</label>
+                                    <div class="col-sm-1 input-group">
+                                        @if (Model.pageTitle.Equals("New"))
+                                        {
+                                            <select class="form-select" id="compType" asp-for="targetModel.Type">
+                                                <option value="Customer">Customer</option>
+                                                <option value="Supplier">Supplier</option>
+                                                <option value="CustSup">CustSup</option>
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" id="compType" asp-for="targetModel.Type">
+                                                <option value="@Model.company.Type">@Model.company.Type</option>
+                                                <option value="Customer">Customer</option>
+                                                <option value="Supplier">Supplier</option>
+                                                <option value="CustSup">CustSup</option>
+                                            </select>
+                                        }
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group  mt-4">
+                                    <label class="col-sm-3 control-label text-right">Comment</label>
+                                    <div class="col-sm-4 input-group">
+                                        @if (Model.pageTitle.Equals("New"))
+                                        {
+                                            <textarea type="text" id="compComment" class="form-control" placeholder="" asp-for="targetModel.Comment"></textarea>
+                                        }
+                                        else
+                                        {
+                                            <textarea type="text" id="compComment" class="form-control" placeholder="" value="@Model.company.Comment" asp-for="targetModel.Comment"></textarea>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group  mt-4">
+                                    <label class="col-sm-3 control-label text-right">Active</label>
+                                    <div class="col-sm-2 input-group">
+                                        @if (Model.pageTitle.Equals("New"))
+                                        {
+                                            @*<input type="checkbox" class="switch_1" checked onchange="ToggleActive(this.checked);" />*@
+                                            <label class="switch switch-lg mt-4">
+                                                <input type="checkbox" class="switch-input" onchange="ToggleActive(this.checked);" checked />
+                                                <span class="switch-toggle-slider">
+                                                    <span class="switch-on"></span>
+                                                    <span class="switch-off"></span>
+                                                </span>
+                                                <span class="switch-label">Active</span>
+                                            </label>
+                                            <input type="hidden" asp-for="targetModel.Active" id="compActive" value="true" />
+                                        }
+                                        else
+                                        {
+                                            if (Model.company.Inactive.Value)
+                                            {
+                                                @*<input type="checkbox" class="switch_1" onchange="ToggleActive(this.checked);" />*@
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" onchange="ToggleActive(this.checked);" />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span>
+                                                    <span class="switch-label">Active</span>
+                                                </label>
+                                                <input type="hidden" asp-for="targetModel.Active" id="compActive" value="true" />
+                                            }
+                                            else
+                                            {
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" onchange="ToggleActive(this.checked);" checked />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span>
+                                                    <span class="switch-label">Active</span>
+                                                </label>
+                                                @*<input type="checkbox" class="switch_1" checked onchange="ToggleActive(this.checked);" />*@
+                                                <input type="hidden" asp-for="targetModel.Active" id="compActive" value="false" />
+                                            }
+                                        }
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                @if (!Model.pageTitle.Equals("New"))
+                {
+                    <div class="tab-pane fade" id="navs-pills-billing-address" role="tabpanel">
+
+                        <form method="POST" asp-action="SaveBillingAddress" asp-controller="Definitions" id="saveBillingForm">
+                            <input type="hidden" value="Billing" asp-for="targetModel.PageType" />
+                            <input type="hidden" value="@Model.company.Pk" asp-for="targetModel.CompPK" />
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Country</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Country" id="billCountry" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Country" id="billCountry" class="form-control" placeholder="" value="@Model.billAddress.Country" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Street</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Street" id="billStreet" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Street" id="billStreet" class="form-control" placeholder="" value="@Model.billAddress.Street" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">City</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.City" id="billCity" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.City" id="billCity" class="form-control" placeholder="" value="@Model.billAddress.City" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">State</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.State" id="billState" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.State" id="billState" class="form-control" placeholder="" value="@Model.billAddress.State" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Post Code</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Postcode" id="billPostCode" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Postcode" id="billPostCode" class="form-control" placeholder="" value="@Model.billAddress.Postcode" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label text-right">Contact Name</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.ContactName" id="billContact" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.ContactName" id="billContact" class="form-control" placeholder="" value="@Model.billAddress.ContactName" />
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Phone 1</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Phone1" id="billPhone1" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Phone1" id="billPhone1" class="form-control" placeholder="" value="@Model.billAddress.Phone1" />
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Phone 2</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Phone2" id="billPhone2" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Phone2" id="billPhone2" class="form-control" placeholder="" value="@Model.billAddress.Phone2" />
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Fax</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Fax" id="billFax" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Fax" id="billFax" class="form-control" placeholder="" value="@Model.billAddress.Fax" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Email</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Email" id="billEmail" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Email" id="billEmail" class="form-control" placeholder="" value="@Model.billAddress.Email" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">WWW</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <input type="text" asp-for="billAddress.Www" id="billWWW" class="form-control" placeholder="" />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" asp-for="billAddress.Www" id="billWWW" class="form-control" placeholder="" value="@Model.billAddress.Www" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                               
+                            </div>
+                           
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label text-right">Comment</label>
+                                        <div class="col-sm-8 input-group">
+                                            @if (Model.pageTitle.Equals("New"))
+                                            {
+                                                <textarea asp-for="billAddress.Comment" id="billComment" class="form-control" placeholder=""></textarea>
+                                            }
+                                            else
+                                            {
+                                                <textarea asp-for="billAddress.Comment" id="billComment" class="form-control" placeholder="" value="@Model.billAddress.Comment"></textarea>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label text-right">
+                                        </label>
+                                        <div class="col-sm-10 input-group">
+                                            <button type="button" class="btn rounded-pill btn-label-primary" id="billCopy" OnClick="CopyBillToShip(@Model.company.Pk);">Copy as Shipping Address</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                    <div class="tab-pane fade" id="navs-pills-shipping-address" role="tabpanel">
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-primary" OnClick="NewShipAddress();">
+                                    New Address
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3" style="padding-right:0;">
+                                <table id="invenTable" class="table table-bordered table-striped table-hover text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>Address List</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        @foreach (var item in Model.shippingAddressList)
+                                        {
+                                            <tr OnClick="GetShipAddress(@item.Id);">
+                                                <td>
+                                                    @item.AddressName
+                                                </td>
+                                                <td>
+                                                    @if (!item.AddressName.Equals("Billing"))
+                                                    {
+                                                        @Html.Raw("&nbsp;&nbsp;&nbsp;")
+                                                        <button type="button" class="btn btn-icon btn-danger" OnClick="DeleteAddress(@item.Id);"><i class="fa fa-trash"></i></button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+
+
+                                       @* <tr>
+                                            <td>
+                                                <button type="button" class="btn btn-default" OnClick="NewShipAddress();">New Address</button>
+                                            </td>
+                                        </tr>
+                                        @foreach (var item in Model.shippingAddressList)
+                                        {
+                                            <tr OnClick="GetShipAddress(@item.Id);">
+                                                <td>
+                                                    @item.AddressName
+
+                                                    @if (!item.AddressName.Equals("Billing"))
+                                                    {
+                                                        @Html.Raw("&nbsp;&nbsp;&nbsp;")
+                                                        <button type="button" class="btn btn-icon btn-danger" OnClick="DeleteAddress(@item.Id);"><i class="fa fa-trash"></i></button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }*@
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.col -->
+                            <div class="col-sm-9" style="padding-right:0;height:100%;" id="shipAddressDetails">
+                            </div>
+                            <div class="col-sm-9" style="padding-right:0;height:100%;" id="newShipAddress">
+                                <form method="POST" asp-action="NewShippingAddress" asp-controller="Definitions" id="newShippingForm">
+                                    <input type="hidden" value="@Model.company.Pk" asp-for="targetModel.CompPK" />
+                                    <input type="hidden" value="newAdd" id="shipAddId" />
+
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Address Name</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.AddressName" type="text" id="shipName" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Street</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Street" type="text" id="shipStreet" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">City</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.City" type="text" id="shipCity" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">State</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.State" type="text" id="shipState" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Post Code</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Postcode" type="text" id="shipPostCode" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Country</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Country" type="text" id="shipCountry" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Contact Name</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.ContactName" type="text" id="shipContact" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Phone 1</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Phone1" type="text" id="shipPhone1" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Phone 2</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Phone2" type="text" id="shipPhone2" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Fax</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Fax" type="text" id="shipFax" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Email</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Email" type="text" id="shipEmail" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">WWW</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Www" type="text" id="shipWWW" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label text-right">Comment</label>
+                                            <div class="col-sm-8 input-group">
+                                                <input asp-for="shipAddress.Comment" type="text" id="shipComment" class="form-control" value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form method="POST" asp-action="DeleteAddress" asp-controller="Definitions" id="deleteAddress">
+                                    <input type="hidden" value="@Model.company.Pk" asp-for="compPK" />
+                                    <input type="hidden" value="" asp-for="addressId" id="deleteAddId" />
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="navs-pills-product-mapping" role="tabpanel">
+                        <form method="POST" asp-action="SaveCompany" asp-controller="Definitions" id="saveMappingForm">
+                            <input type="hidden" value="Mapping" asp-for="targetModel.PageType" />
+                            <input type="hidden" value="@Model.company.Pk" asp-for="targetModel.CompPK" />
+                            <table id="invenTable" class="table table-bordered table-striped table-hover text-center">
+                                <thead>
+                                    <tr>
+                                        <th>Merc Product Code</th>
+                                        <th>Merc Product Desc</th>
+                                        <th>Company Code</th>
+                                        <th>Company Desc</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td> </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    @foreach (var item in Model.mappingList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @item.MercCode
+                                            </td>
+                                            <td>
+                                                @item.MercCode
+                                            </td>
+                                            <td>
+                                                @item.CompanyCode
+                                            </td>
+                                            <td>
+                                                @item.CompanyDesc
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-default" OnClick="DeleteMapping(@item.MappingId)">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </form>
+
+                    </div>
+                    <div class="tab-pane fade" id="navs-pills-more" role="tabpanel">
+                        <form method="POST" asp-action="SaveCompany" asp-controller="Definitions" id="saveMoreForm">
+                            <input type="hidden" value="More" asp-for="targetModel.PageType" />
+                            <input type="hidden" value="@Model.company.Pk" asp-for="targetModel.CompPK" />
+                        </form>
+                    </div> 
+                }
+              
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="dataId" value="@Model.dataId" />
+<input type="hidden" id="pageType" value="Details" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Definitions", "CompanyList");
+
+        $(document).ready(function () {
+
+            //Data Table
+            $('#dataTable').DataTable({
+                order: [[0, 'asc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 150
+            });
+
+            @if (!Model.pageType.Equals("Details"))
+            {
+                @Html.Raw("TabActive('" + Model.pageType + "');")
+            }
+
+            $("#newShipAddress").hide();
+            SwitchPageFromLoad();
+        });
+
+        function SwitchPageFromLoad()
+        {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const pageType = urlParams.get('pageType');
+            TabActive(pageType);
+        }
+
+        function NewShipAddress() {
+            $("#shipAddressDetails").hide();
+            document.getElementById('shipAddId').value = "newAdd"
+            $("#newShipAddress").show();
+        };
+
+        //Modal Add Data
+        $('#modal-addData').on('show.bs.modal', function (event) { });
+
+        //Modal Edit Data
+        $('#modal-editData').on('show.bs.modal', function (event) { });
+
+        function ChangePage(pageType) 
+        {
+            document.getElementById("pageType").value = pageType;
+        };
+
+        function TabActive(pageType) 
+        {
+            console.log("Page Type : " + pageType);
+
+            if (pageType == 'Details') {
+                $('#add_tab_1_btn').trigger('click');
+            }
+            else if (pageType == 'Billing') {
+                $('#add_tab_2_btn').trigger('click');
+            }
+            else if (pageType == 'Shipping') {
+                $('#add_tab_3_btn').trigger('click');
+            }
+            else if (pageType == 'Mapping') {
+                $('#add_tab_4_btn').trigger('click');
+            }
+            else if (pageType == 'More') {
+                $('#add_tab_5_btn').trigger('click');
+            }
+        };
+
+        function ToggleActive(active) 
+        {
+            var result = document.getElementById('compActive').value;
+
+            document.getElementById('compActive').value = active;
+
+            result = document.getElementById('compActive').value;
+        };
+
+        function NewData() 
+        {
+            var newName = document.getElementById('newName').value;
+            var newEmail = document.getElementById('newEmail').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/AddEmail?newName=" + newName + "&newEmail=" + newEmail,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function CopyBillToShip(compPk) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Definitions/CopyBillToShip?compPk=" + eval(compPk),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    Swal.fire({
+                        title: "Address Copied",
+                        text: "Your are address has been copied",
+                        icon: "success",
+                    });
+
+                    setTimeout(() => {
+                        var currentUrl = document.URL;
+
+                        if(!currentUrl.includes('Shipping'))
+                        {
+                            currentUrl = currentUrl + "?pageType=Shipping";
+                        }
+                        window.location.href = currentUrl;
+                    }, 2000);
+                }
+            });
+        }
+
+        function GetShipAddress(addId) 
+        {
+            $("#loadingPage").fadeIn();
+
+            var url = "/Definitions/GetShipAddress?addId=" + eval(addId);
+            $.get(url, function (data) {
+                $('#shipAddressDetails').html(data);
+
+                $("#loadingPage").fadeOut();
+            });
+        };
+
+        function GetDetails(dataType, dataId) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Definitions/GetDetails?content=" + dataType + "&dataId=" + eval(dataId),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) {
+
+                    EmptyShip();
+
+                    document.getElementById('shipName').value = response.addressName;
+                    document.getElementById('shipStreet').value = response.street;
+                    document.getElementById('shipCity').value = response.city;
+                    document.getElementById('shipState').value = response.state;
+
+                    if (response.postCode != null) {
+                        document.getElementById('shipPostCode').value = response.postCode;
+                    }
+
+                    if (response.country != null) {
+                        document.getElementById('shipCountry').value = response.country;
+                    }
+
+                    if (response.contactName != null) {
+                        document.getElementById('shipContact').value = response.contactName;
+                    }
+
+                    if (response.phone1 != null) {
+                        document.getElementById('shipPhone1').value = response.phone1;
+                    }
+
+                    if (response.phone2 != null) {
+                        document.getElementById('shipPhone2').value = response.phone2;
+                    }
+
+                    if (response.fax != null) {
+                        document.getElementById('shipFax').value = response.fax;
+                    }
+
+                    if (response.email != null) {
+                        document.getElementById('shipEmail').value = response.email;
+                    }
+
+                    if (response.www != null) {
+                        document.getElementById('shipWWW').value = response.www;
+                    }
+
+                    if (response.comment != null) {
+                        document.getElementById('shipComment').value = response.comment;
+                    }
+
+                }
+            });
+
+        };
+
+        function editData() 
+        {
+            var editId = document.getElementById('editId').value;
+            var editName = document.getElementById('editName').value;
+            var editEmail = document.getElementById('editEmail').value;
+
+            console.log(editId + "_" + editName + "_" + editEmail);
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/EditEmail?emailId=" + eval(editId) + "&editName=" + editName + "&editEmail=" + editEmail,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function DeleteEmail(editId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Email Group?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Home/DeleteEmail?emailId=" + eval(editId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function DeleteAddress(addId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Address?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        document.getElementById('deleteAddId').value = addId;
+                        document.getElementById('deleteAddress').submit();
+                    }
+                });
+        };
+
+        function SaveData() 
+        {
+            var pageType = document.getElementById('pageType').value;
+            var detailType = document.getElementById('compDetailType').value;
+
+            if (pageType == "Details") {
+                document.getElementById('compName').value = document.getElementById('compName').value.replace('&', '_').replace('&', '_').replace('&', '_');
+                var compName = document.getElementById('compName').value;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Definitions/IsDuplicateName?compName=" + compName,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response) {
+                            if (detailType == "New") {
+                                Swal.fire({
+                                    title: "Company existing",
+                                    text: "You have entered an existing company name \nPlease check and enter again.",
+                                    icon: "error",
+                                });
+                            }
+                            else {
+                                document.getElementById('saveDetailsForm').submit();
+                            }
+                        }
+                        else {
+                            document.getElementById('saveDetailsForm').submit();
+                        }
+                    }
+                });
+            }
+            else if (pageType == "Billing") {
+                document.getElementById('saveBillingForm').submit();
+            }
+            else if (pageType == "Shipping") {
+                var shipAdd = document.getElementById('shipAddId').value;
+
+                if (shipAdd == "None") {
+
+                }
+                else if (shipAdd == "newAdd") {
+                    document.getElementById('newShippingForm').submit();
+                }
+                else {
+                    document.getElementById('saveShippingForm').submit();
+                }
+            }
+        };
+
+        function EmptyAllInput() 
+        {
+            EmptyDetail();
+            EmptyBill();
+            EmptyShip();
+        };
+
+        function EmptyDetail() 
+        {
+            document.getElementById('compName').value = "";
+            document.getElementById('compAbn').value = "";
+            document.getElementById('compType').value = "";
+            document.getElementById('compActive').value = "";
+            document.getElementById('compComment').value = "";
+        };
+
+        function EmptyBill() 
+        {
+            document.getElementById('billStreet').value = "";
+            document.getElementById('billCity').value = "";
+            document.getElementById('billState').value = "";
+            document.getElementById('billPostCode').value = "";
+            document.getElementById('billCountry').value = "";
+            document.getElementById('billContact').value = "";
+            document.getElementById('billPhone1').value = "";
+            document.getElementById('billPhone2').value = "";
+            document.getElementById('billFax').value = "";
+            document.getElementById('billEmail').value = "";
+            document.getElementById('billWWW').value = "";
+            document.getElementById('billComment').value = "";
+        };
+
+        function EmptyShip() 
+        {
+            document.getElementById('shipName').value = "";
+            document.getElementById('shipStreet').value = "";
+            document.getElementById('shipCity').value = "";
+            document.getElementById('shipState').value = "";
+            document.getElementById('shipPostCode').value = "";
+            document.getElementById('shipCountry').value = "";
+            document.getElementById('shipContact').value = "";
+            document.getElementById('shipPhone1').value = "";
+            document.getElementById('shipPhone2').value = "";
+            document.getElementById('shipFax').value = "";
+            document.getElementById('shipEmail').value = "";
+            document.getElementById('shipWWW').value = "";
+            document.getElementById('shipComment').value = "";
+        };
+
+    </script>
+}

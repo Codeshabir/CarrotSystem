@@ -1,0 +1,86 @@
+﻿@model CarrotSystem.Models.ViewModel.DetailViewPacking
+
+@{
+    Layout = null;
+}
+
+@if (Model.detailList.Count > 0)
+{
+    @foreach (var packing in Model.detailList)
+    {
+       @if(packing.IsClosed)
+       {
+           <tr>
+                <td>@packing.PackingDate.ToString("dd/MM/yyyy")</td>
+                <td>@packing.ProductCode</td>
+                <td>@packing.ProductDesc</td>
+                <td>
+                    @packing.ProductQty
+                </td>
+                <td>@packing.BestBefore.ToString("dd/MM/yyyy")</td>
+                <td>@packing.Supplier</td>
+                <td>@packing.PackingDesc</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-icon btn-danger" disabled><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+       }
+       else
+       {
+           <tr>
+                <td>
+                    <input class="form-control" type="date" value="@packing.PackingDate.ToString("yyyy-MM-dd")" onchange="ChangeValue('@packing.ItemPK', 'PackDate', this.value);" />
+                </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@packing.ItemPK', 'ProductCode', this.value);">
+                        <option value="@packing.ProductId">@packing.ProductCode || @packing.ProductDesc</option>
+                        @foreach(var product in Model.productList.Where(w=>!w.Code.Equals(packing.ProductCode)).ToList())
+                        {
+                            <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                        }
+                    </select>
+                </td>
+                <td id="ProductDesc_@packing.ItemPK">
+                    @packing.ProductDesc
+                </td>
+                <td>
+                    <input class="form-control" type="text" value="@packing.ProductQty" onchange="ChangeValue('@packing.ItemPK', 'Qty', this.value);" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');"/>
+                </td>
+                <td>
+                    <input class="form-control" type="date" value="@packing.BestBefore.ToString("yyyy-MM-dd")" onchange="ChangeValue('@packing.ItemPK', 'BeforeDate', this.value);" />
+               </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@packing.ItemPK', 'Supplier', this.value);">
+                        <option value="@packing.SupplierPK">@packing.Supplier</option>
+                        @foreach(var sup in Model.supplierList.Where(w=>!w.Pk.Equals(packing.SupplierPK)).ToList())
+                        {
+                            <option value="@sup.Pk">@sup.CompanyName</option>
+                        }
+                    </select>
+               </td>
+                <td>
+                    <select class="form-control" onchange="ChangeValue('@packing.ItemPK', 'PackDesc', this.value);" >
+                        <option value="@packing.PackingDesc">@packing.PackingDesc</option>
+                        @if(packing.PackingDesc.Equals("Packing"))
+                        {
+                            <option value="Wash">Wash</option>
+                        }
+                        else
+                        {
+                            <option value="Packing">Packing</option>
+                        }
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-icon btn-danger" OnClick="DeleteModel(@packing.PackingId);"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+       }
+    }
+}
+else
+{
+    <div class="alert alert-warning">
+        No records for the selected period.
+    </div>
+}

@@ -1,0 +1,315 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewPOF
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "View Request Form";
+    Layout = "_Layout_None_Menu";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header" id="moveTop">
+    <h1></h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <partial name="_Partial_Loading" />
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            <form asp-action="ApproveForm" asp-controller="POF" method="POST" id="approveForm" enctype="multipart/form-data">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="box">
+                        <div class="box-header">
+                            <button type="button" class="close" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="box-title">Request Form - @Model.poForm.Ponumber</h4>
+                        </div>
+                                    
+                        <div class="box-body">
+
+                            <input type="hidden" asp-for="appBackPage" value="ViewForm">
+                            <input type="hidden" asp-for="appStatus" value="Approve" id="appStatus">
+                            <input type="hidden" asp-for="appComment" value="" id="appComment">
+                            <input type="hidden" asp-for="poForm.FormId" value="@Model.poForm.FormId">
+                            <input type="hidden" asp-for="userName" value="@Model.userName">
+                            <input type="hidden" asp-for="stringDateFrom" value="@DateTime.Now.ToString("dd/MM/yyyy")">
+
+                            <div class="row">
+                                <div class="col-xs-6 form-group">
+                                    <label class="col-xs-4">
+                                        Sent By
+                                    </label>
+                                    <div class="col-xs-8 input-group">
+                                        <input type="text" class="form-control" value="@Model.poForm.SentBy" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 form-group">
+                                    <label class="col-xs-4">
+                                        Sent On
+                                    </label>
+                                    <div class="col-xs-8 input-group">
+                                        <input type="text" class="form-control" value="@Model.poForm.SentOn.ToString("dd/MM/yyyy")" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">&nbsp;</div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Purchase Order Number</label>
+                                    <div class="col-sm-6 input-group">
+                                        <input type="text" class="form-control" value="@Model.poForm.Ponumber" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Order Required By</label>
+                                    <div class="col-sm-6 input-group">
+                                        <input type="text" class="form-control" value="@Model.poForm.RequiredBy" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Supplier:</label>
+                                    <div class="col-sm-6 input-group">
+                                        <input type="text" class="form-control" value="@Model.poForm.Supplier" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th class="col-lg-2 col-md-2 col-sm-2">Code</th>
+                                                    <th class="col-lg-4 col-md-4 col-sm-4">Desc</th>
+                                                    <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                    <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                    <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Total</th>
+                                                    <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.purchaseItems.Count > 0)
+                                                {
+                                                    @foreach (var item in Model.purchaseItems)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @if (string.IsNullOrEmpty(item.ProductCode))
+                                                                {
+                                                                    <input type="text" class="form-control" value="@item.CompanyCode" disabled />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="text" class="form-control" value="@item.ProductCode" disabled />
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (string.IsNullOrEmpty(item.ProductDesc))
+                                                                {
+                                                                    <input type="text" class="form-control" value="@item.CompanyDesc" disabled />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="text" class="form-control" value="@item.ProductDesc" disabled />
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" value="@item.InvoicedQty" disabled />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" value="@item.Price" disabled />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" value="@item.Tax" disabled />
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Total Price</label>
+                                    <div class="col-sm-6 input-group">
+                                        <span class="input-group-addon">$</span>
+                                        <input type="text" class="form-control" value="@Model.purchaseTotal.InvoiceTotal.ToString("$ #0.##")" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Description</label>
+                                    <div class="col-sm-6 input-group">
+                                        <textarea class="form-control" rows="3" disabled>@Model.poForm.Description</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Attachment</label>
+                                        <div class="col-sm-6 input-group">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (Model.fileList.Count > 0)
+                                {
+                                    @foreach (var attFile in Model.fileList)
+                                    {
+                                        <div class="row">
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label"></label>
+                                                <div class="col-sm-6 input-group">
+                                                    <a class="btn btn-default" target="_blank" href="@Url.Action("ShowFile", "POF", new { filePath = attFile.AttachedFileAddress, fileName = attFile.AttachedFileName })">@attFile.AttachedFileName</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+
+                                <div class="row">&nbsp;</div>
+
+                        </div>
+                        <div class="box-footer">
+                            <button type="button" class="btn btn-default pull-left" onclick="ApproveForm('Decline');">Decline</button>
+                            <button type="button" class="btn btn-default pull-right" onclick="ApproveForm('Approve');">Approve</button>
+                        </div>
+                                    
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            <div class="box">
+                <div class="box-body">
+                    <ul class="timeline">
+                    
+                        @foreach(var line in Model.formLogList)
+                        {
+                            <!-- timeline time label -->
+                            <li class="time-label">
+                                  <span class="@line.TimeLabelBgColor">
+                                    @Model.poForm.DateIssued.ToString("HH:mm, dd MMM. yyyy")
+                                  </span>
+                            </li>
+                            <li>
+                              <i class="fa fa-envelope bg-blue"></i>
+
+                              <div class="timeline-item">
+                                <!--<span class="time"><i class="fa fa-clock-o"></i> 12:05</span>-->
+
+                                <h3 class="timeline-header">@line.TimeLabelHeader</h3>
+
+                                @if(!string.IsNullOrEmpty(line.TimeLabelBody))
+                                {
+                                    <div class="timeline-body">
+                                        @line.TimeLabelBody
+                                    </div>
+                                }
+                                
+                              </div>
+                            </li>
+                            <!-- END timeline item -->
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- /.col -->
+
+        <div id="moveDown"></div>
+        <!-- Buttons Scroll Moving-->
+        <partial name="_Partial_MoveScroll" />
+
+    </div>
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+<script src="~/js/dataTables.buttons.js"></script>
+<script src="~/js/buttons.bootstrap.min.js"></script>
+<script src="~/js/jszip.min.js"></script>
+<script src="~/js/pdfmake.min.js"></script>
+<script src="~/js/vfs_fonts.js"></script>
+<script src="~/js/buttons.print.min.js"></script>
+<script src="~/js/buttons.colVis.min.js"></script>
+<script src="~/js/buttons.html5.js"></script>
+<script src="~/js/dataTables.rowGroup.min.js"></script>
+<!-- bootstrap time picker -->
+<script src="~/js/bootstrap-timepicker.js"></script>
+<!-- bootstrap datepicker -->
+<script src="~/js/bootstrap-datepicker.min.js"></script>
+<script src="~/js/numeric-comma.js"></script>
+<!-- Data Moment Function -->
+<script src="~/js/moment.min.js"></script>
+<script src="~/js/datetime-moment.js"></script>
+
+
+<script>
+    //Menu Active
+    MenuActive("", "POF", "PurchaseOrderForm");
+
+    //Loading Page
+    $(function () {
+        $("#loadingPage").fadeOut();
+    });
+
+    function ApproveForm(formType) 
+    {
+        if (formType == "Approve") 
+        {
+            swal({
+                    title: "Do you want to approve this request form?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $("#loadingPage").fadeIn();
+
+                    document.getElementById('appStatus').value = "Approve";
+
+                    document.getElementById('approveForm').submit();
+                }
+            });
+        }
+        else if (formType == "Decline") 
+        {
+            swal("Please enter some comment.", {
+                content: "input",
+            })
+            .then((value) => {
+                $("#loadingPage").fadeIn();
+
+                document.getElementById('appStatus').value = "Decline";
+                document.getElementById('appComment').value = value;
+
+                document.getElementById('approveForm').submit();
+            });
+        }
+    }
+
+
+</script>

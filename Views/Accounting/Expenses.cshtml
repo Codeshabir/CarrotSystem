@@ -1,0 +1,197 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewAccounting
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Expense List";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <ul class="nav nav-pills" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="btn rounded-pill btn-label-primary" OnClick="GetDataTable('New');">New Week</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="listTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period Id</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">End Date</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listTBody">
+                                @foreach (var item in Model.periodList)
+                                {
+                                    <tr onclick="GetDataTable(@item.PeriodId)">
+                                        <td>@item.PeriodId</td>
+                                        <td>@item.TargetDate.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period ID</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3">Expense Code</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3">Expense Desc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTBody">
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Accounting", "Expenses");
+
+        $(document).ready(function () { 
+            //list Table
+            $('#listTable').DataTable({
+                order: [[0, 'desc'], [1, 'desc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 20
+            });
+
+            @if(Model.lastPeriodId > 0)
+            {
+                @Html.Raw("GetDataTable(" + Model.lastPeriodId + ")");
+            }
+
+        });
+
+        function ChangeItem(type, itemId, chgVal) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Accounting/ChangeExpense?itemId=" + eval(itemId) + "&type=" + type + "&chgValue=" + chgVal,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    document.getElementById("totalTd").innerHTML = response;
+                    $("#loadingPage").fadeOut();
+                }
+            });
+        };
+
+        function GetDataTable(periodId) 
+        {
+            if (periodId != "New") {
+                $.ajax({
+                    type: "POST",
+                    url: "/API/IsClosedPeriodById?periodId=" + eval(periodId),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        if (response == "Closed") {
+                            document.getElementById('deleteWeekBtn').disabled = true;
+                            document.getElementById('targetId').value = "";
+                        }
+                        else {
+                            document.getElementById('deleteWeekBtn').disabled = false;
+                            document.getElementById('targetId').value = periodId;
+                        }
+                    }
+                });
+            }
+
+            var url = "/Accounting/GetExpenseList?periodId=" + periodId;
+            $.get(url, function (data) {
+                emptyDataTable();
+                $('#dataTBody').html(data);
+                $("#loadingPage").fadeOut();
+            });
+        };
+
+        function DeleteModel(dataId) 
+        {
+            var targetId = document.getElementById('targetId').value;
+
+            if (targetId == "" || targetId == "0") {
+                Swal.fire({
+                    title: "Invalid Period",
+                    text: "You have clicked an invalid Period \nPlease check and click again.",
+                    icon: "error",
+                });
+            }
+            else {
+                Swal.fire({
+                    title: "Do you want to delete this Expense?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $("#loadingPage").fadeIn();
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/Accounting/DeleteItem?type=Expenses&itemId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+                    }
+                });
+            }
+        };
+
+        function emptyDataTable() 
+        {
+            var tbody = document.getElementById('dataTBody');
+            var rowMax = document.getElementById('dataTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+
+        };
+
+    </script>
+}

@@ -1,0 +1,177 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-CarrotSystem-AEDD7F83-55EE-4214-87F5-7A5B0D2766C7</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\AccountController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Accounts\ForgotPassword.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Models\Context\ScaffoldInformation.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Accounts\ForgotPassword.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
+    <PackageReference Include="DinkToPdf" Version="1.0.8" />
+    <PackageReference Include="itext7" Version="8.0.1" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.28" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.28" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.28" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.28">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
+    <PackageReference Include="MYOB.AccountRight.API.SDK.Core" Version="2021.5.345" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.4" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+    <PackageReference Include="Xero.Api.SDK.Core" Version="1.1.4" />
+    <PackageReference Include="Xero.NetStandard.OAuth2" Version="3.33.0" />
+    <PackageReference Include="Xero.NetStandard.OAuth2Client" Version="1.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Accounting\CalculateList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Accounting\Expenses.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Advanced\PeriodList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Advanced\TaxRates.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\API\CalcResult.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Audit\EventViewer.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Definitions\CompanyDetails.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Definitions\CompanyList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Definitions\ProductList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Definitions\ProductsDetails.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Home\Dashboard.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Home\EmailGroup.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Home\EmailHistory.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Home\UsersList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\InvoiceSync\InvoiceList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Xero\XeroInvoiceList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Xero\ExportToXeroList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\MYOB\ExportTCC.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Operation\Packing.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Operation\ProductTransfer.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Operation\StockCount.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Operation\Waste.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\POF\PurchaseOrderList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Purchases\PurchaseList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Sales\SalesList.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Data\Xero\" />
+    <Folder Include="Data\UserKeys\" />
+    <Folder Include="Pages\" />
+    <Folder Include="wwwroot\css\" />
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\js\" />
+    <Folder Include="wwwroot\lib\bootstrap\" />
+    <Folder Include="wwwroot\lib\bootstrap\dist\css\" />
+    <Folder Include="wwwroot\lib\bootstrap\dist\js\" />
+    <Folder Include="wwwroot\lib\jquery-validation-unobtrusive\" />
+    <Folder Include="wwwroot\lib\jquery-validation\" />
+    <Folder Include="wwwroot\lib\jquery-validation\dist\" />
+    <Folder Include="wwwroot\lib\jquery\" />
+    <Folder Include="wwwroot\lib\jquery\dist\" />
+    <Folder Include="wwwroot\theme\theme01\img\logo\" />
+    <Folder Include="wwwroot\theme\theme01\vendor\libs\inputpicker\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\adminlte.min.js" />
+    <None Include="wwwroot\js\bootstrap-datepicker.min.js" />
+    <None Include="wwwroot\js\bootstrap.min.js" />
+    <None Include="wwwroot\js\buttons.bootstrap.min.js" />
+    <None Include="wwwroot\js\buttons.colVis.min.js" />
+    <None Include="wwwroot\js\buttons.html5.min.js" />
+    <None Include="wwwroot\js\buttons.print.min.js" />
+    <None Include="wwwroot\js\dataTables.bootstrap.min.js" />
+    <None Include="wwwroot\js\dataTables.buttons.js" />
+    <None Include="wwwroot\js\dataTables.rowGroup.min.js" />
+    <None Include="wwwroot\js\daterangepicker.js" />
+    <None Include="wwwroot\js\datetime-moment.js" />
+    <None Include="wwwroot\js\fastclick.js" />
+    <None Include="wwwroot\js\icheck.min.js" />
+    <None Include="wwwroot\js\jquery.dataTables.min.js" />
+    <None Include="wwwroot\js\jquery.min.js" />
+    <None Include="wwwroot\js\jquery.slimscroll.min.js" />
+    <None Include="wwwroot\js\jszip.min.js" />
+    <None Include="wwwroot\js\menuactive.js" />
+    <None Include="wwwroot\js\moment.min.js" />
+    <None Include="wwwroot\js\numeric-comma.js" />
+    <None Include="wwwroot\js\pace.min.js" />
+    <None Include="wwwroot\js\pdfmake.min.js" />
+    <None Include="wwwroot\js\sweetalert.min.js" />
+    <None Include="wwwroot\js\treeview.js" />
+    <None Include="wwwroot\js\vfs_fonts.js" />
+  </ItemGroup>
+
+</Project>

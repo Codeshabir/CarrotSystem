@@ -1,0 +1,49 @@
+﻿@model List<CarrotSystem.Models.ViewModel.StockCountView>
+
+@{
+    Layout = null;
+}
+
+@if (Model.Count > 0)
+{
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.StockDate.ToString("dd/MM/yyyy")</td>
+            <td>@item.ProductCode</td>
+            <td>@item.ProductDesc</td>
+            <td>
+                @if(item.IsClosed)
+                {
+                    @item.ProductQty
+                }
+                else
+                {
+                    <div class="sk-circle-dot"></div>
+                    <input type="text" id="ipt_@item.StockCountId" class="form-control" value="@item.ProductQty" OnChange="ChangeItem('Qty', @item.StockCountId, this.value);" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');"/>
+                }
+            </td>
+            <td>
+                @if(item.IsClosed)
+                {
+                    @item.BatchCode
+                }
+                else
+                {
+                    <div class="sk-circle-dot"></div>
+                    <input type="text" id="ipt_@item.StockCountId" class="form-control" value="@item.BatchCode" OnChange="ChangeItem('BatchCode', @item.StockCountId, this.value);" />
+                }
+            </td>
+            <td>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <div class="alert alert-warning" style="width:100%;">
+        No records for the selected period.
+    </div>
+}
+
+

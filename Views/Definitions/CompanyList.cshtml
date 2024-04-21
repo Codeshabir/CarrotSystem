@@ -1,0 +1,164 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewDefinitions
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Company List";
+    Layout = "_Layout";
+}
+ 
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="SelectedCompanyList" id="selectForm" class="form-horizontal" method="POST" novalidate="novalidate">
+                
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label>Show</label>
+                            <select asp-for="show" class="form-control">
+                                <option value="All">All</option>
+                                <option value="Customer">Customer</option>
+                                <option value="Supplier">Supplier</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Status</label>
+                            <select asp-for="status" class="form-control">
+                                <option value="All">All</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <a class="btn rounded-pill btn-label-primary" OnClick="sendDataForm();">Search</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <a class="btn rounded-pill btn-label-primary" asp-action="CompanyDetails" asp-route-id="New" asp-route-pageType="Details">New Company</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                          
+                        </div>
+                        <div class="col-sm-2 pull-right">
+                            <label>&nbsp;</label>
+                            <div class="input-group"> 
+                                <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="row mt-4">
+                    <table id="dataTable" class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th class="col-lg-3 col-md-3 col-sm-3">Company Name</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Type</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Actiave</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">ABN</th>
+                                <th class="col-lg-3 col-md-3 col-sm-3">Address</th>
+                                <th class="col-lg-2 col-md-2 col-sm-2">Comment</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.companyList)
+                            {
+                                <tr ondblclick="ViewDetails('@item.Pk');">
+                                    <td>@item.CompanyName</td>
+                                    <td>@item.Type</td>
+                                    <td>@item.Active</td>
+                                    <td>@item.Abn</td>
+                                    <td>@item.Address</td>
+                                    <td>@item.Comment</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-icon btn-primary" id="viewBtn_@item.Pk" asp-action="CompanyDetail" asp-route-id="@item.Pk"><i class="fa fa-search"></i></a>
+                                            <button type="button" class="btn btn-icon btn-danger text-white" Onclick="DeleteModel(@item.Pk)"><i class="fa fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table> 
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Definitions", "CompanyList");
+
+        $(document).ready(function () {
+
+            //Data Table
+            var dataTable = $('#dataTable').DataTable({
+                order: [[0, 'asc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 100,
+                "dom": '<"top"i>rt<"bottom"><"clear">'
+            });
+
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+        });
+
+        function DeleteModel(dataId) 
+        {
+            swal({
+                title: "Do you want to remove this Company?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Definitions/DeleteCompany?compId=" + dataId,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                            location.reload(true);
+                        }
+                    });
+
+                }
+            });
+        };
+
+        function ViewDetails(dataId) 
+        {
+            var btnId = "viewBtn_" + dataId;
+            document.getElementById(btnId).click();
+        };
+
+        function sendDataForm() 
+        {
+            document.getElementById('selectForm').submit();
+        };
+    </script>
+}

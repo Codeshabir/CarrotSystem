@@ -1,0 +1,101 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Xero Invoice List";
+    Layout = "_Layout";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        Xero Invoice List
+    </h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <partial name="_Partial_Loading" />
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <table id="dataTable" class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>To</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Total Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var invoice in Model)
+                            {
+                                <tr>
+                                    <td>@invoice.InvoiceNumber</td>
+                                    <td>@invoice.Contact.Name</td>
+                                    <td>@invoice.Date.ToString("dd/MM/yyyy")</td>
+                                    <td>@invoice.DueDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@invoice.Total</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+<script src="~/js/dataTables.buttons.js"></script>
+<script src="~/js/buttons.bootstrap.min.js"></script>
+<script src="~/js/jszip.min.js"></script>
+<script src="~/js/pdfmake.min.js"></script>
+<script src="~/js/vfs_fonts.js"></script>
+<script src="~/js/buttons.print.min.js"></script>
+<script src="~/js/buttons.colVis.min.js"></script>
+<script src="~/js/buttons.html5.js"></script>
+<script src="~/js/dataTables.rowGroup.min.js"></script>
+<!-- bootstrap time picker -->
+<script src="~/js/bootstrap-timepicker.js"></script>
+<!-- bootstrap datepicker -->
+<script src="~/js/bootstrap-datepicker.min.js"></script>
+<script src="~/js/numeric-comma.js"></script>
+<!-- Data Moment Function -->
+<script src="~/js/moment.min.js"></script>
+<script src="~/js/datetime-moment.js"></script>
+
+<script>
+
+MenuActive("", "Xero", "SalesList");
+
+//Loading Page
+$(function () {
+    $("#loadingPage").fadeOut();
+});
+
+$(document).ready(function () {
+    //DataTable Date Configuration
+    $.fn.dataTable.moment('DD/MM/YYYY');
+
+    //DataTable Configuration
+    $('#dataTable').DataTable({
+        'paging': true,
+        'lengthChange': false,
+        'displayLength': 100,
+        'searching': true,
+        'ordering': true,
+        'info': false,
+        'autoWidth': false,
+        "order": [[0, 'desc']]
+    })
+});
+
+</script>

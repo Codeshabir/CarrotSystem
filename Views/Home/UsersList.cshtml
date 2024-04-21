@@ -1,0 +1,458 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewUser
+
+@{
+    ViewBag.Title = "User List";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn rounded-pill btn-label-primary" data-bs-toggle="modal" data-bs-target="#modal-user">
+                            Add User
+                        </button>
+                    </div>
+                    <div class="col-sm-8"></div>
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                 <div class="row">
+                     <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Login ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Role</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.userList)
+                                {
+                                    <tr ondblclick="EditDataModal('@item.LoginId');">
+                                        <td>
+                                            @item.LoginId.ToString()
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.FirstName))
+                                            {
+                                                @item.FirstName.ToString()
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.LastName))
+                                            {
+                                                @item.LastName.ToString()
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.Role))
+                                            {
+                                                @item.Role.ToString()
+                                            }
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-icon btn-danger" OnClick="DeleteData('@item.LoginId')"><i class="fa fa-remove text-white"></i></button>
+                                            <button type="button" class="btn btn-icon btn-primary" OnClick="EditDataModal('@item.LoginId')"><i class="fa fa-pencil text-white"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table> 
+                     </div> 
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-user">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">New User</h4>
+            </div>
+            <div class="modal-body">
+                <form id="addDataForm" asp-action="EditUser" asp-controller="Accounts" method="POST" class="form-horizontal">
+                    <input type="hidden" asp-for="userAddType" value="New" />
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Login ID</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.LoginId" id="newLoginId" value="" class="form-control" placeholder="Login ID" required />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Password</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="password" asp-for="user.Password" id="newPassword" value="" class="form-control" placeholder="Password" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Confirm Password</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="password" id="newConPassword" value="" class="form-control" placeholder="Confirm Password" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">First Name</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.FirstName" id="newFirstName" value="" class="form-control" placeholder="First Name" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Last Name</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.LastName" id="newLastName" value="" class="form-control" placeholder="Last Name" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Role</label>
+                            <div class="col-sm-7 input-group">
+                                <select asp-for="user.Role" id="newRole" class="form-control">
+                                    <option value="Employee">Employee</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="SystemAdmin">SystemAdmin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Email Address</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.Email" id="newEmail" value="" class="form-control" placeholder="Email" required />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Mobile</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.MobileNumbers" id="newMobile" value="" class="form-control" placeholder="Contact Number" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" required autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default btn-primary" OnClick="SendDataForm('New');">Add</button>
+                <button type="button" class="btn btn-default btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<!-- Modal for Edit Data -->
+<div class="modal fade" id="modal-editData">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="editDataForm" asp-action="EditUser" asp-controller="Accounts" method="POST" class="form-horizontal">
+                <input type="hidden" asp-for="userAddType" value="Edit" />
+
+                <div class="modal-header">
+                 
+                    <h4 class="modal-title">User Details</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Login ID</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="loginId" id="editLoginId" value="" class="form-control" disabled />
+                                <input type="hidden" asp-for="user.LoginId" id="dataId" />
+                            </div>
+                        </div>
+              @*           <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Password</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="password" asp-for="user.Password" id="editPassword" value="" class="form-control" placeholder="Please input Only to change" required autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Confirm Password</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="password" asp-for="user.Password" id="editConPassword" value="" class="form-control" placeholder="Please input Only to change" required autocomplete="off" />
+                            </div>
+                        </div> *@
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">First Name</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.FirstName" id="editFirstName" value="" class="form-control" placeholder="First Name" required autocomplete="off" />
+                                <span id="errorEditFirst"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Last Name</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.LastName" id="editLastName" value="" class="form-control" placeholder="Last Name" required autocomplete="off" />
+                                <span id="errorEditLast"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Role</label>
+                            <div class="col-sm-7 input-group">
+                                <select asp-for="user.Role" id="editRole" class="form-control">
+                                    <option value="Employee">Employee</option>
+                                    <option value="Supervisor">Supervisor</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="SystemAdmin">SystemAdmin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Email</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.Email" id="editEmail" value="" class="form-control" placeholder="Email Address" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label text-right">Mobile</label>
+                            <div class="col-sm-7 input-group">
+                                <input type="text" asp-for="user.MobileNumbers" id="editMobile" value="" class="form-control" placeholder="Contact Number" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" required autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-primary" OnClick="SendDataForm('Edit');">Save</button>
+                    <button type="button" class="btn btn-default btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal Update-->
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Users", "UsersList");
+
+        //DataTable Configuration
+        var datatable = $('#dataTable').DataTable({
+            'paging': true,
+            'lengthChange': false,
+            'pageLength': 50,
+            'searching': true,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[0, 'asc']],
+            "dom": '<"top"i>rt<"bottom"><"clear">'
+        });
+
+        $('#searchText').on('keyup', function () {
+            dataTable.search($('#searchText').val()).draw();
+        });
+
+
+        function SendDataForm(type) 
+        {
+            if (ValidDataChecker(type)) {
+                if (type == "New") {
+                    document.getElementById("addDataForm").submit();
+                }
+                else {
+                    document.getElementById('editDataForm').submit();
+                }
+            }
+        };
+
+        function EditDataModal(dataId) 
+        {
+            GetData(dataId);
+
+            $('#modal-editData').modal('show');
+        };
+
+        function ValidDataChecker(type) 
+        {
+            if (type == "New") {
+                if (document.getElementById('newLoginId').value == "") {
+                    document.getElementById('newLoginId').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newPassword').value == "") {
+                    document.getElementById('newPassword').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newConPassword').value == "") {
+                    document.getElementById('newConPassword').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newPassword').value != document.getElementById('newConPassword').value) {
+                    document.getElementById('newPassword').style.borderColor = "#ff0000";
+                    document.getElementById('newConPassword').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newFirstName').value == "") {
+                    document.getElementById('newFirstName').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newLastName').value == "") {
+                    document.getElementById('newLastName').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newRole').value == "") {
+                    document.getElementById('newRole').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('newEmail').value == "") {
+                    document.getElementById('newEmail').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                return true;
+            }
+            else {
+                // if (document.getElementById('editPassword').value == "") {
+                //     document.getElementById('editPassword').style.borderColor = "#ff0000";
+
+                //     return false;
+                // }
+
+                // if (document.getElementById('editConPassword').value == "") {
+                //     document.getElementById('editConPassword').style.borderColor = "#ff0000";
+
+                //     return false;
+                // }
+
+                // if (document.getElementById('editPassword').value != document.getElementById('editConPassword').value) {
+                //     document.getElementById('editPassword').style.borderColor = "#ff0000";
+                //     document.getElementById('editConPassword').style.borderColor = "#ff0000";
+
+                //     return false;
+                // }
+
+                if (document.getElementById('editFirstName').value == "") {
+                    document.getElementById('editFirstName').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('editLastName').value == "") {
+                    document.getElementById('editLastName').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('editRole').value == "") {
+                    document.getElementById('editRole').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                if (document.getElementById('editEmail').value == "") {
+                    document.getElementById('editEmail').style.borderColor = "#ff0000";
+
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        function GetData(dataId) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Home/GetUserData?dataId=" + dataId,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) {
+
+                    document.getElementById('dataId').value = response.loginId;
+                    document.getElementById('editLoginId').value = response.loginId;
+                    document.getElementById('editFirstName').value = response.firstName;
+                    document.getElementById('editLastName').value = response.lastName;
+                    document.getElementById('editRole').value = response.role;
+                    document.getElementById('editMobile').value = response.mobile;
+                    document.getElementById('editEmail').value = response.email;
+                }
+            });
+        };
+
+        //Modal Edit Data Clear
+        $('#modal-editData').on('show.bs.modal', function (event) {
+            ClearEditData();
+        });
+
+        function ClearEditData() 
+        {
+            // document.getElementById('editPassword').value == "";
+            // document.getElementById('editPassword').style.borderColor = "#808080";
+
+            document.getElementById('editFirstName').value == "";
+            document.getElementById("errorEditFirst").innerHTML = "";
+            document.getElementById('editFirstName').style.borderColor = "#808080";
+
+            document.getElementById('editLastName').value == "";
+            document.getElementById("errorEditLast").innerHTML = "";
+            document.getElementById('editLastName').style.borderColor = "#808080";
+
+            document.getElementById('editMobile').value == "";
+            document.getElementById('editMobile').style.borderColor = "#808080";
+
+            document.getElementById('editEmail').value == "";
+            document.getElementById('editEmail').style.borderColor = "#808080";
+        };
+
+        function DeleteData(dataId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this User?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Accounts/DeleteUser?loginId=" + dataId,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                            location.href = "/Home/UsersList";
+                        }
+                    });
+                }
+            });
+        };
+    </script>
+}

@@ -1,0 +1,284 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewPOF
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Purchase Order Request Form";
+    Layout = "_Layout";
+}
+
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+   New Purchase Order
+</h4>
+<form asp-action="UpdateOrderForm" asp-controller="POF" method="POST" enctype="multipart/form-data" id="newPOForm">
+<div class="row invoice-add">
+    <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+        <div class="card invoice-preview-card">
+            <div class="card-body">
+
+                <div class="row">
+                    <input type="hidden" asp-for="purchaseId" value="@Model.purchase.InvoiceId">
+                    <input type="hidden" asp-for="formAction" value="Save" id="newFormAction">
+                    <input type="hidden" asp-for="formStatus" value="New">
+                    <input type="hidden" asp-for="poForm.SentBy" value="@Model.userFullName" id="newFormSentBy">
+                    <input type="hidden" asp-for="stringDateFrom" value="@DateTime.Now.ToString("dd/MM/yyyy")" id="newFormSentOn">
+
+                    <div class="col-md-2 form-group">
+                        <label class="col-xs-4">
+                            Sent By
+                        </label>
+                        <div class="col-xs-8 input-group">
+                            <input type="text" class="form-control" value="@Model.user.LoginId" disabled>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 form-group">
+                        <label class="col-xs-4">
+                            Sent On
+                        </label>
+                        <div class="col-xs-8 input-group">
+                            <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" disabled>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 form-group">
+                        <label class="col-sm-12 control-label">Purchase Order Number</label>
+                        <div class="col-sm-6 input-group">
+                            <input type="text" asp-for="poForm.Ponumber" class="form-control" value="New" disabled>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 form-group">
+                        <label class="col-sm-12 control-label">Order Required By</label>
+                        <div class="col-sm-6 input-group">
+                            <input type="text" class="form-control" value="@Model.userFullName" disabled>
+                            <input type="hidden" asp-for="poForm.RequiredBy" class="form-control" value="@Model.userFullName">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 form-group">
+                        <label class="col-sm-12 control-label">Supplier:</label>
+                        <div class="col-sm-6 input-group">
+                            <input type="text" class="form-control" value="@Model.supplierName" disabled>
+                            <input type="hidden" asp-for="poForm.Supplier" class="form-control" value="@Model.supplierName">
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row invoice-add mt-3">
+    <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+        <div class="card invoice-preview-card">
+            <div class="card-body">
+                <div class="row">
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th class="col-lg-2 col-md-2 col-sm-2">Code</th>
+                                <th class="col-lg-4 col-md-4 col-sm-4">Desc</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Total</th>
+                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.purchaseItems.Count > 0)
+                            {
+                                @foreach (var item in Model.purchaseItems)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (string.IsNullOrEmpty(item.ProductCode))
+                                            {
+                                                <input type="text" class="form-control" value="@item.CompanyCode" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" value="@item.ProductCode" disabled />
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (string.IsNullOrEmpty(item.ProductDesc))
+                                            {
+                                                <input type="text" class="form-control" value="@item.CompanyDesc" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" value="@item.ProductDesc" disabled />
+                                            }
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" value="@item.InvoicedQty" disabled />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" value="@item.Price" disabled />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" value="@item.Tax" disabled />
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="row mt-5">
+                    <div class="col-md-10"></div>
+                    <div class="col-md-2">
+                        <label class="col-sm-12 control-label">Total Price</label>
+                        <div class="col-sm-6 input-group">
+                            <input type="text" class="form-control" value="@Model.purchaseTotal.InvoiceTotal.ToString("$ #0.##")" disabled>
+                            <input type="hidden" class="form-control" asp-for="poForm.Price" value="@Model.purchaseTotal.InvoiceTotal">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+<div class="row invoice-add mt-3">
+    <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+        <div class="card invoice-preview-card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="col-sm-4 control-label">Description</label>
+                        <div class="col-sm-6 input-group">
+                            <textarea class="form-control" rows="4" asp-for="poForm.Description"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="col-sm-12 control-label">Attachment</label>
+                        <div class="col-sm-6 input-group">
+                            <input type="file" class="form-control" asp-for="attachFile" id="newAttachFile" />
+                        </div>
+                    </div>
+
+                    @if (Model.fileList.Count > 0)
+                    {
+                        @foreach (var attFile in Model.fileList)
+                        {
+                            <div class="col-md-12">
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-6 input-group">
+
+                                    <a class="btn btn-default" target="_blank" href="@Url.Action("ShowFile", "POF", new { filePath = attFile.AttachedFileAddress, fileName = attFile.AttachedFileName })">
+
+                                            <span class="badge bg-primary">@attFile.AttachedFileName</span>
+                                        </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row invoice-add mt-3">
+    <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+        <div class="card invoice-preview-card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mt-2">
+                        <div class="demo-inline-spacing text-center">
+                            <button type="button" class="btn rounded-pill btn-label-primary" onclick="SendForm('Save', 'New');">Save</button>
+                            <button type="button" class="btn rounded-pill btn-label-primary" onclick="SendForm('Send', 'New');">Save & Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+ 
+@section PageScripts
+{
+    <script>
+        
+        function SendForm(type, formType) {
+            if (formType == "New") {
+                document.getElementById('newFormAction').value = type;
+
+                if (type == "Save") {
+                    $("#loadingPage").fadeIn();
+
+                    document.getElementById('newPOForm').submit();
+                }
+                else {
+                    Swal.fire({
+                        title: "Do you want to send this request form?",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    })
+                        .then((willDelete) => {
+                            if (willDelete) {
+                                $("#loadingPage").fadeIn();
+
+                                document.getElementById('newPOForm').submit();
+                            }
+                        });
+                }
+            }
+            else {
+                document.getElementById('updateFormAction').value = type;
+
+                if (type == "UpdateSave") {
+                    $("#loadingPage").fadeIn();
+
+                    document.getElementById('updatePOForm').submit();
+                }
+                else {
+                    Swal.fire({
+                        title: "Do you want to send this request form?",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    })
+                        .then((willDelete) => {
+                            if (willDelete) {
+                                $("#loadingPage").fadeIn();
+
+                                document.getElementById('updatePOForm').submit();
+                            }
+                        });
+                }
+            }
+        }
+
+        function DeleteFile(aId) {
+            Swal.fire({
+                title: "Do you want to remove this attachment?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $("#loadingPage").fadeIn();
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/POF/DeleteFile?aId=" + eval(aId),
+                            contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+                    }
+                });
+        }
+
+    </script>
+}

@@ -1,0 +1,1150 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@model CarrotSystem.Models.ViewModel.ViewPurchase
+
+@{
+    if(Model.isNew)
+    {
+        ViewBag.Title = "Purchase Details #" + Model.purchaseView.InvoiceId;
+    }
+    else
+    {
+        ViewBag.Title = "New Purchase";
+    }
+    
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    Purchase Details #@Model.purchaseView.InvoiceId
+</h4>
+ 
+<form id="purchaseProfile" asp-action="EditPurchase" asp-controller="Purchases" method="POST">
+    <div class="row invoice-add">
+        <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+            <div class="card invoice-preview-card">
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <label>File Number</label>
+                            @if (Model.purchaseView.InvoiceId > 0)
+                            {
+                                <input asp-for="newPurchase.InvoiceId" type="hidden" value="@Model.purchaseView.InvoiceId" />
+                                <input type="text" id="invoiceId" class="form-control" value="@Model.purchaseView.InvoiceId" disabled />
+                            }
+                            else
+                            {
+                                <input asp-for="newPurchase.InvoiceId" type="hidden" value="0" />
+                                <input type="text" id="invoiceId" class="form-control" value="@Model.purchaseView.InvoiceId" disabled />
+                            }
+                        </div>
+                        <div class="col-md-1">
+                            <label>Status</label>
+                            <input asp-for="newPurchase.Status" type="hidden" value="@Model.purchaseView.Status" />
+                            <input type="text" id="status" class="form-control" value="@Model.purchaseView.Status" disabled />
+
+                        </div>
+
+                        <div class="col-md-9 mt-2">
+                            <div class="demo-inline-spacing">
+                                <button type="button" class="btn rounded-pill btn-label-primary" OnClick="EditData('Save')" id="saveBtn">Save</button>
+
+                                @if (Model.purchaseView.Status.Equals("Order"))
+                                {
+                                    <a class="btn rounded-pill btn-label-primary" asp-action="NewOrderForm" asp-controller="POF" asp-route-purchaseId="@Model.purchaseView.InvoiceId">Request</a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Request</button>
+                                }
+
+                                @if (Model.purchaseView.Status.Equals("New"))
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Copy</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="CopyData()" id="copyBtn">Copy</button>
+                                }
+
+                                @if (Model.purchaseView.Status.Equals("New"))
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Add Another</button>
+                                }
+                                else
+                                {
+                                    <button class="btn rounded-pill btn-label-primary" asp-action="PurchaseDetails" asp-route-id="New">Add Another</button>
+                                }
+
+                                @if (Model.purchaseView.Status.Equals("New"))
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Hold</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="HoldData()" id="holdBtn">Hold</button>
+                                }
+
+                                @if (Model.purchaseView.Status.Equals("New"))
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" disabled>Delete</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn rounded-pill btn-label-primary" OnClick="DeleteModel('Purchases', '@Model.purchaseView.InvoiceId')" id="deleteBtn">Delete</button>
+                                }
+
+                                <a class="btn rounded-pill btn-label-primary" href="/Purchases/PurchaseList">Close</a>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row invoice-add mt-3">
+        <!-- Invoice Add-->
+        <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+            <div class="card invoice-preview-card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-borderless table-hover">
+                                <tr>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Type</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Delivery Date</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Invoice BN</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left" id="claimRefTh">
+                                        @if ((!string.IsNullOrEmpty(Model.purchaseView.Type)) && Model.purchaseView.Type.Contains("Claim"))
+                                        {
+                                            @Html.Raw("Claim Ref")
+                                        }
+                                    </th>
+                                </tr>
+                                <tr>
+                                    @if (Model.isClosed)
+                                    {
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.purchaseView.Type" id="type" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <div class="input-group-addon"></div>
+                                                <input type="text" class="form-control" value="@Model.purchaseView.DeliveryDate.ToString("dd/MM/yyyy")" disabled />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.purchaseView.InvoiceBN" disabled />
+                                        </td>
+
+                                        @if (!string.IsNullOrEmpty(Model.purchaseView.ClaimRef))
+                                        {
+                                            <td class="text-left" id="claimListTd" hidden>
+                                                <input type="text" class="form-control" value="@Model.purchaseView.ClaimRef" />
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="text-left" id="claimListTd" hidden>
+                                                <input type="text" class="form-control" value="" disabled />
+                                            </td>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left">
+                                            <select asp-for="newPurchase.Type" class="form-select" onchange="ChangeType(this.value);" id="type">
+                                                <option value="@Model.purchaseView.Type">@Model.purchaseView.Type</option>
+                                                @foreach (var type in Model.typeList.Where(w => !w.Equals(Model.purchaseView.Type)).ToList())
+                                                {
+                                                    <option value="@type">@type</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="text-left">
+                                            <div class="input-group">
+                                                <div class="input-group-addon"></div>
+                                                <input asp-for="newPurchase.DeliveryDate" id="deliveryDate" type="text" class="form-control" value="@Model.purchaseView.DeliveryDate.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                                            </div>
+                                        </td>
+                                        <td class="text-left">
+                                            @if (Model.isNew)
+                                            {
+                                                <input asp-for="newPurchase.InvoiceBN" type="text" id="invoiceBN" class="form-control" value="" />
+                                            }
+                                            else
+                                            {
+                                                <input asp-for="newPurchase.InvoiceBN" type="text" id="invoiceBN" class="form-control" value="@Model.purchaseView.InvoiceBN" />
+                                            }
+                                        </td>
+                                        @if ((!string.IsNullOrEmpty(Model.purchaseView.Type)) && Model.purchaseView.Type.Contains("Claim"))
+                                        {
+                                            @if (!string.IsNullOrEmpty(Model.purchaseView.ClaimRef))
+                                            {
+                                                <td class="text-left" id="claimListTd">
+                                                    <input asp-for="newPurchase.ClaimRef" id="claimRef" type="text" class="form-control" value="@Model.purchaseView.ClaimRef" />
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-left" id="claimListTd">
+                                                    <select asp-for="newPurchase.ClaimRef" id="claimRef" style="width:100%;" class="form-select" OnChange="GetClaimDetails(this.value);">
+                                                    </select>
+                                                </td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td class="text-left" id="claimListTd" hidden>
+                                                <select asp-for="newPurchase.ClaimRef" id="claimRef" style="width:100%;" class="form-select" OnChange="GetClaimDetails(this.value);">
+                                                </select>
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                                <tr>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Comment</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Supplier</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left">Billing Address</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-left" id="returnStockTh"></th>
+                                </tr>
+                                <tr>
+                                    @if (Model.isClosed)
+                                    {
+                                        <td class="text-left">
+                                            @if (string.IsNullOrEmpty(Model.purchaseView.Comment))
+                                            {
+                                                <input type="text" class="form-control" value="" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" value="@Model.purchaseView.Comment" disabled />
+                                            }
+                                        </td>
+                                        <td class="text-left">
+                                            <input type="text" class="form-control" value="@Model.purchaseView.SupplierName" disabled />
+                                        </td>
+                                        <td class="text-left">
+                                            @if (string.IsNullOrEmpty(Model.purchaseView.BillingAddress))
+                                            {
+                                                <input type="text" class="form-control" value="" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" value="@Model.purchaseView.BillingAddress" disabled />
+                                            }
+                                        </td>
+                                        <td class="text-left">
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-left">
+                                            @if (string.IsNullOrEmpty(Model.purchaseView.Comment))
+                                            {
+                                                <input asp-for="newPurchase.Comment" type="text" id="comment" class="form-control" value="" />
+                                            }
+                                            else
+                                            {
+                                                <input asp-for="newPurchase.Comment" type="text" id="comment" class="form-control" value="@Model.purchaseView.Comment" />
+                                            }
+                                        </td>
+                                        <td class="text-left">
+                                            @if (Model.isNew)
+                                            {
+                                                <select asp-for="newPurchase.Supplier" class="form-select" id="supplier" OnChange="GetBillingAddress(this.value);">
+                                                    <option value="0"> </option>
+                                                    @foreach (var supplier in Model.detailSupplierList)
+                                                    {
+                                                        <option value="@supplier.Pk">@supplier.CompanyName</option>
+                                                    }
+                                                </select>
+                                            }
+                                            else
+                                            {
+                                                <select asp-for="newPurchase.Supplier" class="form-select" id="supplier" OnChange="GetBillingAddress(this.value);">
+                                                    <option value="@Model.purchaseView.CompanyId">@Model.purchaseView.SupplierName</option>
+                                                    @foreach (var supplier in Model.detailSupplierList.Where(w => !w.Pk.Equals(Model.purchaseView.CompanyId)).ToList())
+                                                    {
+                                                        <option value="@supplier.Pk">@supplier.CompanyName</option>
+                                                    }
+                                                </select>
+                                            }
+                                        </td>
+                                        <td class="text-left">
+                                            @if (string.IsNullOrEmpty(Model.purchaseView.BillingAddress))
+                                            {
+                                                <input type="text" id="billAddress" class="form-control" value="" disabled />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" id="billAddress" class="form-control" value="@Model.purchaseView.BillingAddress" disabled />
+                                            }
+                                        </td>
+                                        <td class="text-left">
+                                            @if ((!string.IsNullOrEmpty(Model.purchaseView.Type)) && Model.purchaseView.Type.Contains("Claim"))
+                                            {
+                                                if (Model.purchaseView.IsStockReturn)
+                                                {
+                                                    <input asp-for="newPurchase.ReturnStock" type="checkbox" class="switch_1" checked id="returnStock" />
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="newPurchase.ReturnStock" type="checkbox" class="switch_1" id="returnStock" />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <input asp-for="newPurchase.ReturnStock" type="checkbox" class="switch_1" checked id="returnStock" hidden />
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-center">Sub Total</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-center">Sum Tax</th>
+                                    <th class="col-lg-3 col-md-3 col-sm-3 text-center">Invoice Total</th>
+                                </tr>
+                                <tr>
+                                    @if (Model.isNew)
+                                    {
+                                        <td class="text-center">$ 0</td>
+                                        <td class="text-center">$ 0</td>
+                                        <td class="text-center">$ 0</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-center">@Model.totalView.SubTotal.ToString("$ #0.##")</td>
+                                        <td class="text-center">@Model.totalView.TaxTotal.ToString("$ #0.##")</td>
+                                        <td class="text-center">@Model.totalView.InvoiceTotal.ToString("$ #0.##")</td>
+                                    }
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row invoice-add mt-3">
+        <!-- Invoice Add-->
+        <div class="col-lg-12 col-12 mb-lg-0 mb-4">
+            <div class="card invoice-preview-card">
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="nav-align-top mb-4">
+                                <ul class="nav nav-pills mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-profile" aria-controls="navs-pills-top-home" aria-selected="true">
+                                            Profile
+                                        </button>
+                                    </li>
+
+                                    <li class="nav-item" role="presentation">
+                                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-claims" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                            Claims
+                                        </button>
+                                    </li>
+
+                                    <li class="nav-item" role="presentation">
+                                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-messages" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                            More
+                                        </button>
+                                    </li>
+
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="navs-pills-top-profile" role="tabpanel">
+
+                                        @if (Model.purchaseView.Status.Equals("Order"))
+                                        {
+                                            <div class="tab-pane active" id="add_tab_1">
+                                                <div class="row">
+                                                    <div class="form-group mb-3">
+                                                        <div class="radio">
+                                                            <label style="margin-right:20px;">
+                                                                <input type="radio" name="oprRadios" id="optRadio1" value="MercCode" checked OnClick="SwitchCode(this.value);">
+                                                                Merc Product Code
+                                                            </label>
+                                                            <label>
+                                                                <input type="radio" name="oprRadios" id="optRadio2" value="CompCode" OnClick="SwitchCode(this.value);">
+                                                                Company Product Code
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <table id="mercTable" class="table table-bordered table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="col-lg-2 col-md-2 col-sm-2">Merc Code</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Merc Desc</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Total</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Job</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan="2">
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            @if (!Model.isNew)
+                                                            {
+                                                                @foreach (var item in Model.purchaseItemViewList)
+                                                                {
+                                                                    @if (Model.isClosed)
+                                                                    {
+                                                                        <tr>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.ProductCode" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.ProductDesc" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.InvoicedQty" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.Price" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.Tax" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" class="form-control" value="@item.Job" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-default form-control" disabled><i class="fa fa-trash"></i></button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <tr>
+                                                                            <td>
+                                                                                <select class="form-select" id="mercProuductCode_@item.ItemId" OnChange="GetProduct(this.value, @item.ItemId);">
+                                                                                    <option value="@item.ProductId">@item.ProductCode || @item.ProductDesc</option>
+                                                                                    @foreach (var product in Model.productList.Where(w => !w.Id.Equals(item.ProductId)).ToList())
+                                                                                    {
+                                                                                        <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                                    }
+                                                                                </select>
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductDesc_@item.ItemId" class="form-control" value="@item.ProductDesc" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductQty_@item.ItemId" class="form-control" value="@item.InvoicedQty" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Merc', @item.ItemId);" />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductPrice_@item.ItemId" class="form-control" value="@item.Price.ToString("#0.#####")" onKeyup="this.value=this.value.replace(/[^0-9][.][^0-9]/g,'');" OnChange="CalcTotal('Merc', @item.ItemId);" />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductTotal_@item.ItemId" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductTax_@item.ItemId" class="form-control" value="@item.Tax" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="mercProductJob_@item.ItemId" class="form-control" value="@item.Job" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-default btn-danger form-control" onclick="DeleteModel('PurchaseItem', '@item.ItemId');"><i class="fa fa-trash"></i></button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            @if (!Model.purchaseView.Status.Equals("Exported") || (!Model.isClosed))
+                                                            {
+                                                                <tr>
+                                                                    @if (string.IsNullOrEmpty(Model.purchaseView.SupplierName))
+                                                                    {
+                                                                        <td>
+                                                                            <select class="form-select" id="newMercProductCode" OnChange="GetProduct(this.value, 0);" disabled>
+                                                                                <option value="0"> </option>
+                                                                                @foreach (var product in Model.productList)
+                                                                                {
+                                                                                    <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                                }
+                                                                            </select>
+                                                                        </td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <td>
+                                                                            <select class="form-select" id="newMercProductCode" OnChange="GetProduct(this.value, 0);">
+                                                                                <option value="0"> </option>
+                                                                                @foreach (var product in Model.productList)
+                                                                                {
+                                                                                    <option value="@product.Id">@Html.Raw(product.DisplayProductName)</option>
+                                                                                }
+                                                                            </select>
+                                                                        </td>
+                                                                    }
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductDesc" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductQty" class="form-control" value="0" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Merc', 0);" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductPrice" class="form-control" value="0" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Merc', 0);" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductTotal" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductTax" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newMercProductJob" class="form-control" value="TCC" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-default btn-primary form-control" onclick="NewItem('Merc')" id="mercAddBtn" disabled>Add</button>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+
+                                                        </tbody>
+                                                    </table>
+
+                                                    <table id="compTable" class="table table-bordered table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Cust Code</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Cust Desc</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoiced<br />Total</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1">Job</th>
+                                                                <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (!Model.isNew)
+                                                            {
+                                                                @foreach (var item in Model.purchaseItemViewList)
+                                                                {
+                                                                    @if (Model.isClosed)
+                                                                    {
+                                                                        <tr>
+                                                                            <td>
+                                                                                <input type="text" id="compProuductCode_@item.ItemId" class="form-control" value="@item.CompanyCode" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductDesc_@item.ItemId" class="form-control" value="@item.CompanyDesc" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductQty_@item.ItemId" class="form-control" value="@item.InvoicedQty" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductPrice_@item.ItemId" class="form-control" value="@item.Price.ToString("#0.#####")" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductTotal_@item.ItemId" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductTax_@item.ItemId" class="form-control" value="@item.Tax" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductJob_@item.ItemId" class="form-control" value="@item.Job" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-default form-control" disabled><i class="fa fa-trash"></i></button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <tr>
+                                                                            <td>
+                                                                                <input type="text" id="compProuductCode_@item.ItemId" class="form-control" value="@item.CompanyCode" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductDesc_@item.ItemId" class="form-control" value="@item.CompanyDesc" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductQty_@item.ItemId" class="form-control" value="@item.InvoicedQty" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Comp', @item.ItemId);" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductPrice_@item.ItemId" class="form-control" value="@item.Price.ToString("#0.#####")" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Comp', @item.ItemId);" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductTotal_@item.ItemId" class="form-control" value="@item.InvoiceTotal.ToString("$ #0.##")" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductTax_@item.ItemId" class="form-control" value="@item.Tax" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input type="text" id="compProductJob_@item.ItemId" class="form-control" value="@item.Job" disabled />
+                                                                            </td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-default form-control btn-danger" onclick="DeleteModel('PurchaseItem', '@item.ItemId');"><i class="fa fa-trash"></i></button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            @if (!Model.purchaseView.Status.Equals("Exported") || (!Model.isClosed))
+                                                            {
+                                                                <tr>
+                                                                    <td>
+                                                                        <input type="text" id="newCompCompanyCode" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompCompanyDesc" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompProductQty" class="form-control" value="0" onKeyup="this.value=this.value.replace(/[^0-9.-]/g,'');" OnChange="CalcTotal('Comp', 0);" />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompProductPrice" class="form-control" value="0" onKeyup="this.value=this.value.replace(/[^0-9.]/g,'');" OnChange="CalcTotal('Comp', 0);" />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompProductTotal" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompProductTax" class="form-control" value="" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" id="newCompProductJob" class="form-control" value="TCC" disabled />
+                                                                    </td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-default btn-primary form-control" onclick="NewItem('Comp')" id="compAddBtn" disabled>Add</button>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <!-- /.tab-pane -->
+                                        }
+
+
+                                    </div>
+
+                                    <div class="tab-pane fade" id="navs-pills-top-claims" role="tabpanel">
+                                        @if (!Model.isNew)
+                                        {
+                                            <table id="claimTable" class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Invoice ID</th>
+                                                        <th>Supplier Inv</th>
+                                                        <th>Claim Date</th>
+                                                        <th>Status</th>
+                                                        <th>Type</th>
+                                                        <th>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var claim in Model.claimList)
+                                                    {
+                                                        <tr>
+                                                            <td>@claim.InvoiceId</td>
+                                                            <td>@claim.InvoiceId</td>
+                                                            <td>@claim.ClaimDate.ToString("dd/MM/yyyy")</td>
+                                                            <td>@claim.Status</td>
+                                                            <td>@claim.Type</td>
+                                                            <td>@claim.InvoiceId</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        }
+                                    </div>
+
+                                    <div class="tab-pane fade" id="navs-pills-top-messages" role="tabpanel">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <a class="btn rounded-pill btn-label-primary" href="/Purchases/PurchaseList">Back to List</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.isNew)
+{
+    <input type="hidden" id="hdnCompPk" value="0" />
+}
+else
+{
+    <input type="hidden" id="hdnCompPk" value="@Model.purchaseView.CompanyId" />
+}
+
+<input type="hidden" id="pageType" value="Profile" />
+
+@section PageScripts
+{
+    <script>
+        $(function () {
+            //Menu Active
+            MenuActive("", "Purchases", "PurchaseList");
+
+            //DataTable Configuration
+            $('#dataTable').DataTable({
+                'paging': false,
+                'displayLength': 100,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': false,
+                'info': false,
+                'autoWidth': true
+            });
+
+            SwitchCode("MercCode");
+        });
+
+        //Delivery Date
+        $('#deliveryDate').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function DeleteModel(type, dataId) {
+            if (type == "Purchases") {
+                var titleMsg = "Do you want to remove this Purchase?";
+            }
+            else if (type == "PurchaseItem") {
+                var titleMsg = "Do you want to remove this Purchase Item?";
+            }
+
+            Swal.fire({
+                title: titleMsg,
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Purchases/DeletePurchase?type=" + type + "&dataId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                if (type == "Purchases") {
+                                    location.href = "/Purchases/PurchaseList";
+                                }
+                                else if (type == "PurchaseItem") {
+                                    location.reload(true);
+                                }
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function EditData(type) 
+        {
+            if (ValidMessages()) 
+            {
+                document.getElementById('purchaseProfile').submit();
+            }
+        };
+
+        function ChangeType(type) 
+        {
+            if (type == "PriceClaim" || type == "QualityClaim" || type == "QuantityClaim") 
+            {
+                document.getElementById('claimRefTh').innerHTML = "Claim Ref";
+                document.getElementById('returnStockTh').innerHTML = "Return Stock";
+
+                document.getElementById('claimListTd').hidden = false;
+                document.getElementById('claimRef').hidden = false;
+                document.getElementById('returnStock').hidden = false;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Purchases/GetClaimRefList",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        $("#claimRef option").remove();
+
+                        var str;
+
+                        str += '<option value="" />';
+
+                        for (var i = 0; i < response.length; ++i) {
+                            str += '<option value="' + response[i].invoiceId + '">' + response[i].displayOption + '</option>';
+                        }
+
+                        document.getElementById("claimRef").innerHTML = str;
+                    }
+                });
+            }
+            else if (type == "FreightExp" || type == "FreightInw" || type == "FreightOut") 
+            {
+                document.getElementById('claimRefTh').innerHTML = "";
+                document.getElementById('returnStockTh').innerHTML = "";
+
+                document.getElementById('claimListTd').hidden = true;
+                document.getElementById('claimRef').hidden = true;
+                document.getElementById('returnStock').hidden = true;
+            }
+            else 
+            {
+                document.getElementById('claimRefTh').innerHTML = "";
+                document.getElementById('returnStockTh').innerHTML = "";
+
+                document.getElementById('claimListTd').hidden = true;
+                document.getElementById('claimRef').hidden = true;
+                document.getElementById('returnStock').hidden = true;
+            }
+        };
+
+        function ChangePage(pageType) 
+        {
+            document.getElementById("pageType").value = pageType;
+        };
+
+        function SaveComment(invId, comment) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/SaveComment?invId=" + invId + "&comment=" + comment,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function SetInvoice() 
+        {
+            var purchaseId = document.getElementById("invoiceId").value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/SetInvoice?purchaseId=" + purchaseId,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function () {
+                    location.reload(true);
+                }
+            });
+        };
+
+        function GetProduct(productId, itemId) 
+        {
+            var mercDesc = "", mercTax = "", compCode = "", compDesc = "", compTax = "";
+
+            var compPk = document.getElementById("hdnCompPk").value;
+
+            document.getElementById('newMercProductQty').disabled = false;
+            document.getElementById('newMercProductPrice').disabled = false;
+            document.getElementById('newCompProductQty').disabled = false;
+            document.getElementById('newCompProductPrice').disabled = false;
+
+            if (itemId > 0) 
+            {
+                mercDesc = "mercProductDesc_" + itemId;
+                mercTax = "mercProductTax_" + itemId;
+                compCode = "compCompanyCode_" + itemId;
+                compDesc = "compCompanyDesc_" + itemId;
+                compTax = "compProductTax_" + itemId;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Purchases/ChangeProductonItem?itemId=" + itemId + "&dataType=Product&dataValue=" + productId,
+                    contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                    dataType: "json",
+                    success: function (response) {}
+                });
+            }
+            else 
+            {
+                mercDesc = "newMercProductDesc";
+                mercTax = "newMercProductTax";
+                compCode = "newCompCompanyCode";
+                compDesc = "newCompCompanyDesc";
+                compTax = "newCompProductTax";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/GetProduct?productId=" + productId + "&compPk=" + compPk,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) 
+                {
+                    document.getElementById(mercDesc).value = response.productDesc;
+                    document.getElementById(mercTax).value = response.tax;
+
+                    if (!response.companyCode == "") 
+                    {
+                        document.getElementById(compCode).value = response.companyCode;
+                        document.getElementById(compDesc).value = response.companyDesc;
+                    }
+                    document.getElementById(compTax).value = response.tax;
+                }
+            });
+
+        };
+
+        function GetBillingAddress(compPk) 
+        {
+            document.getElementById("hdnCompPk").value = compPk;
+            document.getElementById('newMercProductCode').disabled = false;
+            document.getElementById('newMercProductQty').disabled = false;
+            document.getElementById('newMercProductPrice').disabled = false;
+            document.getElementById('newCompProductQty').disabled = false;
+            document.getElementById('newCompProductPrice').disabled = false;
+
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/GetBillingAddress?compPk=" + eval(compPk),
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) 
+                {
+                    document.getElementById("billAddress").value = response;
+                }
+            });
+        };
+
+        function CalcTotal(code, lineId) 
+        {
+            var mercQtyId = "", mercPriceId = "", compPriceId = "";
+            var compQtyId = "", mercTotalId = "", compTotalId = "";
+            var mercTaxId = "", compTaxId = "", taxCode = "";
+
+            var qty = 0, price = 0, total = 0;
+            var type = document.getElementById("type").value;
+
+            if (lineId > 0) {
+                mercQtyId = "mercProductQty_" + lineId;
+                mercPriceId = "mercProductPrice_" + lineId;
+                mercTotalId = "mercProductTotal_" + lineId;
+                mercTaxId = "mercProductTax_" + lineId;
+
+                compQtyId = "compProductQty_" + lineId;
+                compPriceId = "compProductPrice_" + lineId;
+                compTotalId = "compProductTotal_" + lineId;
+                compTaxId = "compProductTax_" + lineId;
+            }
+            else {
+                mercQtyId = "newMercProductQty";
+                mercPriceId = "newMercProductPrice";
+                mercTotalId = "newMercProductTotal";
+                mercTaxId = "newMercProductTax";
+
+                compQtyId = "newCompProductQty";
+                compPriceId = "newCompProductPrice";
+                compTotalId = "newCompProductTotal";
+                compTaxId = "newCompProductTax";
+            }
+
+            if (code == "Merc") 
+            {
+                qty = eval(document.getElementById(mercQtyId).value);
+                price = eval(document.getElementById(mercPriceId).value);
+                total = qty * price;
+                taxCode = document.getElementById(mercTaxId).value;
+
+                document.getElementById("mercAddBtn").disabled = false;
+                document.getElementById("compAddBtn").disabled = false;
+            }
+            else if (code == "Comp") 
+            {
+                qty = eval(document.getElementById(compQtyId).value);
+                price = eval(document.getElementById(compPriceId).value);
+                total = qty * price;
+                taxCode = document.getElementById(compTaxId).value;
+
+                document.getElementById("mercAddBtn").disabled = false;
+                document.getElementById("compAddBtn").disabled = false;
+            }
+
+            if (type.includes('Claim')) 
+            {
+                if (qty > 0) {
+                    qty = qty * -1;
+                    total = qty * price;
+                }
+            }
+
+            document.getElementById(mercQtyId).value = qty;
+            document.getElementById(mercPriceId).value = price;
+            document.getElementById(mercTotalId).value = total;
+
+            document.getElementById(compQtyId).value = qty;
+            document.getElementById(compPriceId).value = price;
+            document.getElementById(compTotalId).value = total;
+
+            if (lineId > 0) 
+            {
+                var returnVal = lineId + "_" + eval(qty) + "_" + eval(price);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Purchases/ChangeItemTotal?total=" + returnVal,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {}
+                });
+
+            }
+        };
+
+        function SwitchCode(code) 
+        {
+            if (code == "MercCode") {
+                document.getElementById('mercTable').hidden = false;
+                document.getElementById('compTable').hidden = true;
+            }
+            else if (code == "CompCode") {
+                document.getElementById('mercTable').hidden = true;
+                document.getElementById('compTable').hidden = false;
+            }
+        };
+
+        function ValidMessages() 
+        {
+            var returnVal = true;
+
+            if (document.getElementById('type').value == "") {
+                FocusMessages('type', 'Type');
+                returnVal = false;
+            }
+            else {
+                var type = document.getElementById('type').value;
+
+                if (type == "PriceClaim" || type == "QualityClaim" || type == "QuantityClaim") {
+                    if (document.getElementById('claimRef').value == "") {
+                        FocusMessages('claimRef', 'Claim Ref');
+                        returnVal = false;
+                    }
+                }
+            }
+
+            if (document.getElementById('invoiceBN').value == "") 
+            {
+                FocusMessages('invoiceBN', 'Invoice BN');
+                returnVal = false;
+            }
+
+            if (document.getElementById('supplier').value == "") 
+            {
+                FocusMessages('supplier', 'Supplier');
+                returnVal = false;
+            }
+
+            return returnVal;
+        };
+
+        function FocusMessages(focusId, dataName) 
+        {
+            Swal.fire({
+                title: "Invalid Details",
+                text: "You have entered an invalid " + dataName + "\nPlease check and enter again.",
+                icon: "error",
+            });
+
+            setTimeout(() => { document.getElementById(focusId).focus(); }, 1000);
+        };
+
+        function NewItem(type) 
+        {
+            var productCode = document.getElementById("newMercProductCode").value;
+            var invoiceId = document.getElementById("invoiceId").value;
+
+            if (type == "Merc") {
+                var qty = document.getElementById("newMercProductQty").value;
+                var price = document.getElementById("newMercProductPrice").value;
+                var tax = document.getElementById("newMercProductTax").value;
+            }
+            else if (type == "Comp") {
+                var qty = document.getElementById("newCompProductQty").value;
+                var price = document.getElementById("newCompProductPrice").value;
+                var tax = document.getElementById("newCompProductTax").value;
+            }
+
+            var newPurchaseItem = { "InvoiceId": invoiceId, "ProductId": productCode, "InvoiceQty": qty, "Price": price, "Job": "TCC", "Tax": tax };
+
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/NewPurchaseItem",
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                data: newPurchaseItem,
+                dataType: "json",
+                success: function (response) {
+                    EditData('Save');
+                }
+            });
+
+        };
+
+        function GetClaimDetails(claimId) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Purchases/GetClaimDetails?claimId=" + eval(claimId),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                    document.getElementById("billAddress").value = response.address;
+
+                    $("#supplier option").remove();
+
+                    var cust = '<option value="' + response.custPk + '">' + response.companyName + '</option>';
+
+                    document.getElementById("supplier").innerHTML = cust;
+                    document.getElementById("supplier").value = response.custPk
+
+                    document.getElementById('invoiceBN').value = response.invoiceBn;
+
+                    if (response.isReturned == true) {
+                        document.getElementById('returnStock').checked = true;
+                    }
+                    else if (response.isReturned == false) {
+                        document.getElementById('returnStock').checked = false;
+                    }
+                }
+            });
+        };
+
+    </script>
+}
+
+

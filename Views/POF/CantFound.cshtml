@@ -1,0 +1,58 @@
+﻿@model ErrorViewModel
+@{
+    ViewBag.Title = "Can not find the Request Form";
+    Layout = "_Layout_None_Menu";
+}
+
+<!-- Main content -->
+<section class="content">
+
+    <!-- Default box -->
+    <div class="box">
+
+        <div class="box-header with-border">
+            <h3 class="box-title"></h3>
+        </div>
+        <!-- /.box-header -->
+
+        <div class="box-body">            
+            <h2 class="text-danger">No longer existing request form.</h2>
+            <p>
+                @DateTime.Now.ToString("dd MMM yyyy, hh:mm:ss")
+
+            </p>    
+        </div>
+        <!-- /.box-body -->
+
+        <div class="box-footer">
+            <div class="col-sm-5 text-right">
+                <button type="button" class="btn btn-default" onclick="CloseWindow();">Close</button>
+            </div>
+            <div class="col-sm-1 text-center"></div>
+            <div class="col-sm-5 text-left">
+            </div>
+        </div>
+    </div>
+    <!-- /.box -->
+
+</section>
+<!-- /.content -->
+
+<script>
+
+    $(function () {
+        let redirect_Page = () => {
+            let tID = setTimeout(function () {
+                window.close();
+                //window.clearTimeout(tID);		// clear time out.
+            }, 5500);
+        }
+    });
+
+    function CloseWindow() {
+        window.close();
+    };
+
+
+</script>
+

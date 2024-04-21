@@ -1,0 +1,215 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewDefinitions
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Product List";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Action</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="SelectedProductList" id="selectForm" class="form-horizontal" method="POST" novalidate="novalidate">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label>Show</label>
+                            <select asp-for="show" class="form-select">
+                                <option value="All">All</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <label>Filter</label>
+                            <select asp-for="filter" class="form-select">
+                                <option value="All">All</option>
+                                @foreach (var item in Model.productMainGroupList)
+                                {
+                                    <option value="@item.Type">@item.Type</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <button type="button" class="btn rounded-pill btn-label-primary" OnClick="sendDataForm();">Search</button>
+                            </div>
+                        </div> 
+                        <div class="col-sm-2">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <a class="btn rounded-pill btn-label-primary" asp-action="ProductsDetails" asp-route-id="New">New Product</a>
+                            </div>
+                        </div> 
+                        <div class="col-sm-2 pull-right">
+                            <label>&nbsp;</label>
+                            <div class="input-group">
+                                <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="row mt-4"> 
+                    <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Code</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Desc</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Actiave</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Main<br />Group</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Sub<br />Group</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Minor<br />Group</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Comment</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Stock<br />Countable</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in Model.productViewList)
+                                {
+                                    <tr ondblclick="ViewDetails('@item.ProductId');">
+                                        <td>@item.Code</td>
+                                        <td>@item.Desc</td>
+                                        <td>@item.Active</td>
+                                        <td>@item.Tax</td>
+                                        <td>@item.MainGroup</td>
+                                        <td>@item.SubGroup</td>
+                                        <td>@item.MinorGroup</td>
+                                        <td>@item.Comment</td>
+                                        @if (item.IsCountable)
+                                        {
+                                            <td>
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" OnChange="Countable(@item.ProductId, this.checked);" checked />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span> 
+                                                </label>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" OnChange="Countable(@item.ProductId, this.checked);" />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span> 
+                                                </label>
+                                            </td>
+                                        }
+                                        <td>
+                                            <div class="btn-group">
+                                                <a class="btn btn-icon btn-primary" id="viewBtn_@item.ProductId" asp-action="ProductsDetails" asp-route-id="@item.ProductId"><i class="fa fa-search"></i></a>
+                                                <button type="button" class="btn btn-icon btn-danger text-white" Onclick="DeleteModel(@item.ProductId)"><i class="fa fa-trash"></i></button>
+                                            </div>
+                                           
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table> 
+                    </div> 
+                </div> 
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Definitions", "CompanyList");
+
+        $(document).ready(function () {
+
+            //Data Table
+            var dataTable = $('#dataTable').DataTable({
+                order: [[0, 'asc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 100,
+                "dom": '<"top"i>rt<"bottom"><"clear">'
+            });
+
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+        });
+
+        function Countable(productId, check) 
+        {
+            let isChecked = "false";
+
+            if (check) {
+                isChecked = "true";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Definitions/ProductCountable?productId=" + eval(productId) + "&isChecked=" + isChecked,
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                dataType: "json",
+                success: function (response) {}
+            });
+        }
+
+        function DeleteModel(dataId) 
+        {
+            Swal.fire({
+                title: "Do you want to remove this Product?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Definitions/DeleteProduct?productId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function ViewDetails(dataId) 
+        {
+            var btnId = "viewBtn_" + dataId;
+            document.getElementById(btnId).click();
+
+        };
+
+        function sendDataForm() 
+        {
+            document.getElementById('selectForm').submit();
+        };
+    </script>
+
+}

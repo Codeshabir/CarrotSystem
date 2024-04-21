@@ -1,0 +1,415 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewMYOB
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "MYOB Export List";
+    Layout = "_Layout";
+}
+
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn rounded-pill btn-label-primary" id="expSaleBtn" OnClick="ExportToMYOB('Sales');" disabled>Export Sales</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn rounded-pill btn-label-primary" id="expPurchaseBtn" OnClick="ExportToMYOB('Purchases');" disabled>Export Purchases</button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group pull-right">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn rounded-pill btn-label-primary text-white" onclick="ClearRecords();">Clear</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group pull-right">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <a class="btn rounded-pill btn-label-primary" asp-action="MYOBtoDB" asp-controller="MYOB">MYOB to DB</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mt-4">
+                        <table id="listTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period End Date</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period Id</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listTBody">
+                                @foreach (var item in Model.periodList)
+                                {
+                                    <tr id="clsTr_@item.PeriodId" onclick="GetDataTable('@item.TargetDate.ToString("ddMMyyyy")', @item.PeriodId)">
+                                        <td>@item.TargetDate.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                        <td>@item.PeriodId</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="nav-align-top mb-4">
+                            <ul class="nav nav-pills mb-3" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-response" aria-controls="navs-pills-top-home" aria-selected="true">
+                                        Response
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-sales" aria-controls="navs-pills-top-profile" aria-selected="false" tabindex="-1">
+                                        Sales
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-purchases" aria-controls="navs-pills-top-messages" aria-selected="false" tabindex="-1">
+                                        Purchases
+                                    </button>
+                                </li> 
+                                <li class="pull-right"></li>
+                                <li class="pull-right mt-2">Period End Date : <span id="targetDate" style="vertical-align:middle;"></span></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="navs-pills-response" role="tabpanel">
+                                    <table id="responseTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Target</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Type</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Result</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Error</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Error Description</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Exported On</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="responseTBody">
+                                        </tbody>
+                                    </table> 
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-sales" role="tabpanel">
+                                    <table id="salesTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Sale Date</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Co Last Name</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Item No.</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesTBody">
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                                <div class="tab-pane fade" id="navs-pills-purchases" role="tabpanel">
+                                    <table id="purchasesTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Purchase Date</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Co Last Name</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Item No.</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="purchasesTBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="exportDate" />
+
+<div class="modal fade" id="modal-progress-bar">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="myBar">0%</span>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-green" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 40%" id="prg-bar">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "MYOB", "ExportTCC");
+
+        $(document).ready(function () {
+             
+            //list Table
+            $('#listTable').DataTable({
+                order: [[0, 'desc'], [2, 'desc']],
+                'paging': false,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 20
+            });
+
+            //Data Table
+            $('#responseTable').DataTable({
+                order: [[1, 'desc']],
+                'paging': false,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 150
+            });
+
+            @if (!string.IsNullOrEmpty(Model.focusDate))
+            {
+                @Html.Raw("GetDataTable('" + Model.focusDate + "', " + Model.focusId + ")");
+            }
+        });
+
+        function GetDataTable(target, btnId) 
+        {
+            let year = target.split('')[4] + target.split('')[5] + target.split('')[6] + target.split('')[7];
+            let month = target.split('')[2] + target.split('')[3];
+            let day = target.split('')[0] + target.split('')[1];
+            let targetDate = day + "/" + month + "/" + year;
+
+            document.getElementById('targetDate').innerHTML = targetDate;
+            document.getElementById('exportDate').value = target;
+
+            ExportButtonToggle(false);
+
+            var responseUrl = "/MYOB/GetExportResponseList?target=" + target;
+            $.get(responseUrl, function (data) {
+                $('#responseTBody').html(data);
+            });
+
+            var salesUrl = "/MYOB/GetExportSalesList?target=" + target;
+            $.get(salesUrl, function (data) {
+                $('#salesTBody').html(data);
+            });
+
+            var purchasesUrl = "/MYOB/GetExportPurchasesList?target=" + target;
+            $.get(purchasesUrl, function (data) {
+                $('#purchasesTBody').html(data);
+            });
+        };
+
+        function ExportToMYOB(type) 
+        {
+            var maxWidth = 100;
+            var exportDate = document.getElementById('exportDate').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/MYOB/GetExportCount?type=" + type + "&exportDate=" + exportDate + "",
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    console.log("Max Width : " + response);
+                    maxWidth = response * 1000;
+
+                    loadingBar(5, maxWidth);
+                }
+            });
+
+            $.ajax({
+                type: "POST",
+                url: "/MYOB/ExportToMYOB?type=" + type + "&exportDate=" + exportDate + "",
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                    $('#modal-progress-bar').modal('hide');
+
+                    var extCount = response.split("_")[1];
+                    var errCount = response.split("_")[2];
+
+                    Swal.fire({
+                        title: "Exported : " + extCount + ", Failed : " + errCount,
+                        icon: "success",
+                        buttons: "Okay",
+                        dangerMode: false,
+                    })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            location.reload(true);
+                        }
+                    });
+                }
+            });
+        };
+
+        function ClearRecords(type) 
+        {
+            var exportDate = document.getElementById('exportDate').value;
+
+            $.ajax({
+                type: "POST",
+                url: "/MYOB/ClearRecords?type=Purchases&exportDate=" + exportDate + "",
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/MYOB/ClearRecords?type=Sales&exportDate=" + exportDate + "",
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (response) {
+                            location.reload(true);
+                        }
+                    });
+                }
+            });
+        };
+
+        function ExportButtonToggle(val) 
+        {
+            document.getElementById('expSaleBtn').disabled = val;
+            document.getElementById('expPurchaseBtn').disabled = val;
+        };
+
+        function emptyDataTables() 
+        {
+            emptyResponseTable();
+            emptySalesTable();
+            emptyPurchasesTable();
+        };
+
+        function emptyResponseTable() 
+        {
+            var tbody = document.getElementById('responseTBody');
+            var rowMax = document.getElementById('responseTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function emptySalesTable() 
+        {
+            var tbody = document.getElementById('salesTBody');
+            var rowMax = document.getElementById('salesTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function emptyPurchasesTable() 
+        {
+            var tbody = document.getElementById('purchasesTBody');
+            var rowMax = document.getElementById('purchasesTBody').rows.length;
+
+            for (i = rowMax - 1; i >= 0; i--) {
+                tbody.deleteRow(i);
+            }
+        };
+
+        function loadingBar(interVal, max) 
+        {
+            $('#modal-progress-bar').modal({ backdrop: 'static', keyboard: false });
+            $('#modal-progress-bar').modal('show');
+
+            let i = 0;
+
+            if (i == 0) 
+            {
+                i = 1;
+                let elem = document.getElementById("myBar");
+                let bar = document.getElementById("prg-bar");
+
+                let width = interVal;
+
+                if (max == 0) {
+                    width = 0;
+                }
+
+                let id = setInterval(frame, interVal);
+
+                function frame() 
+                {
+                    if (width > max) {
+                        clearInterval(id);
+                        i = 0;
+
+                    }
+                    else if (width == max) {
+                        $('#modal-progress-bar').modal('hide');
+
+                        elem.style.width = "100%";
+                        elem.innerHTML = "Exported : 100%";
+
+                        $('#prg-bar').attr('aria-valuenow', Math.round(100)).css('width', '100%');
+                    }
+                    else {
+                        width++;
+
+                        let perWidth = (width / max) * 100;
+
+                        elem.style.width = Math.round(perWidth, 2) + "%";
+                        elem.innerHTML = "Exported : " + Math.round(perWidth, 2) + " %";
+
+                        $('#prg-bar').attr('aria-valuenow', Math.round(perWidth, 2)).css('width', Math.round(perWidth, 2) + '%');
+                    }
+                }
+            };
+        };
+
+    </script>
+}
+
+
+
+

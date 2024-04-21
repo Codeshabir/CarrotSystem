@@ -1,0 +1,319 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewSales
+
+@{
+    ViewBag.Title = "Sales List";
+    Layout = "_Layout";
+}
+ 
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="SelectedSalesList" id="selectDateForm" class="form-horizontal">
+
+                    <div class="row">
+                        <div class="col-md-2 mb-4">
+                            <label for="status" class="form-label">Status</label>
+                            <select id="status" asp-for="stringStatus" class="selectpicker w-100" data-style="btn-default">
+                                <option value="All">All</option>
+                                <option value="Exported">Exported</option>
+                                <option value="Invoice">Invoice</option>
+                                <option value="OnHold">OnHold</option>
+                                <option value="Order">Order</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 mb-4">
+                            <label for="stringCustomer" class="form-label">Customer</label>
+                            <select id="stringCustomer" asp-for="stringCustomer" class="selectpicker w-100" data-style="btn-default">
+                                <option value="All">All</option>
+                                @foreach (var cust in Model.customerList)
+                                {
+                                    <option value="@cust.CompanyName">@cust.CompanyName</option>
+                                }
+                            </select>
+                        </div>
+                         
+                        <div class="col-md-2 mb-4">
+                            <label for="datePickerFrom" class="form-label">Date From</label>
+                            <input id="datePickerFrom" asp-for="stringDateFrom" type="text" class="form-control" value="@Model.dateFrom.ToString("dd/MM/yyyy")" />
+                        </div>
+
+                        <div class="col-md-2 mb-4">
+                            <label for="datePickerTo" class="form-label">Date To</label> 
+                            <input id="datePickerTo" asp-for="stringDateTo" type="text" class="form-control" value="@Model.dateTo.ToString("dd/MM/yyyy")" />
+                        </div>
+                       
+                        <div class="col-md-2 mb-4">
+
+                            @if (Model.isShowAll.Equals("Yes"))
+                            {
+                                <label class="switch switch-lg mt-4">
+                                    <input type="checkbox" class="switch-input" onchange="ToggleShowAll(this.checked);" checked />
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">Show All</span>
+                                </label>
+                                <input type="hidden" asp-for="isShowAll" value="Yes" id="showAll" />
+                            }
+                            else
+                            {
+                                <label class="switch switch-lg mt-4">
+                                    <input type="checkbox" class="switch-input" onchange="ToggleShowAll(this.checked);" />
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">Show All</span>
+                                </label>
+                                <input type="hidden" asp-for="isShowAll" value="No" id="showAll" />
+                            }
+
+                           
+                        </div>
+                        
+                        <div class="col-md-1 mb-4 justify-content-end">
+                            <button type="submit" class="btn rounded-pill btn-label-primary mt-4">
+                                <i class="menu-icon tf-icons bx bx-search-alt"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </form> 
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header py-2">
+                 <div class="row">
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                        </div>
+                    </div>
+                     <div class="col-md-8"></div>
+                     <div class="col-md-2">
+                         <a class="btn rounded-pill btn-label-primary" asp-action="SalesDetails" asp-controller="Sales" asp-route-id="New">
+                            New Sales
+                        </a>
+                     </div>
+                 </div>
+            </div>
+            <div class="card-body">
+                <table id="dt-saleslist" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>InvoiceID</th>
+                            <th>Shipping<br />Date</th>
+                            <th>Customer</th>
+                            <th>State</th>
+                            <th>CustPO</th>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>ClaimRef</th>
+                            <th>Total</th>
+                            <th>Comment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.invoiceList)
+                        {
+                            if (item.Status.Equals("Deleted"))
+                            {
+                                <tr class="bg-danger color-palette">
+                                    <td class="text-white">@item.InvoiceId</td>
+                                    <td class="text-white">@item.ShippingDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-white">@item.Customer</td>
+                                    <td class="text-white">@item.State</td>
+                                    @if (!string.IsNullOrEmpty(item.CustPO))
+                                    {
+                                        <td class="text-white">@item.CustPO</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td class="text-white">@item.Status</td>
+                                    <td class="text-white">@item.Type</td>
+                                    @if (!string.IsNullOrEmpty(item.ClaimRef))
+                                    {
+                                        <td class="text-white">@item.ClaimRef</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td class="text-white">@item.invTotal.Total.ToString("$ 0,0.00")</td>
+                                    @if (!string.IsNullOrEmpty(item.Comment))
+                                    {
+                                        <td class="text-white">@item.Comment</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td></td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr ondblclick="ViewDetails('@item.InvoiceId');">
+                                    <td>@item.InvoiceId</td>
+                                    <td>@item.ShippingDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Customer</td>
+                                    <td>@item.State</td>
+                                    @if (!string.IsNullOrEmpty(item.CustPO))
+                                    {
+                                        <td>@item.CustPO</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td>@item.Status</td>
+                                    <td>@item.Type</td>
+                                    @if (string.IsNullOrEmpty(item.ClaimRef))
+                                    {
+                                        <td>@item.ClaimRef</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td>@item.invTotal.Total.ToString("$ 0,0.00")</td>
+                                    @if (!string.IsNullOrEmpty(item.Comment))
+                                    {
+                                        <td>@item.Comment</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-icon btn-primary" id="viewBtn_@item.InvoiceId" asp-action="SalesDetails" asp-controller="Sales" asp-route-id="@item.InvoiceId"><i class="fa fa-search"></i></a>
+                                            <a class="btn btn-icon btn-warning" id="copyBtn_@item.InvoiceId" asp-action="DuplicateSales" asp-controller="Sales" asp-route-id="@item.InvoiceId"><i class="fa fa-clone"></i></a>
+                                            <button type="button" class="btn btn-icon btn-danger" Onclick="DeleteModel('Sales', @item.InvoiceId);"><i class="fa fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts
+{
+    <script>
+
+        $(document).ready(function () { 
+            //DataTable Configuration
+            var dataTable = $('#dt-saleslist').DataTable({
+                'responsive': true,
+                order: [[0, 'desc']], 
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 100,
+                //"dom": '<"top"i>rt<"bottom"><"clear">'
+            })
+
+            $('#dt-saleslist_filter').empty();
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+        });
+
+        $('#datePickerFrom').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        $('#datePickerTo').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function ViewDetails(dataId) {
+            var btnId = "viewBtn_" + dataId;
+            document.getElementById(btnId).click();
+
+        };
+
+        function ToggleShowAll(checkVal) {
+            if (checkVal) {
+                document.getElementById('showAll').value = "Yes";
+            }
+            else {
+                document.getElementById('showAll').value = "No";
+            }
+
+            document.getElementById('selectDateForm').submit();
+        };
+
+        function sendDateForm() {
+            document.getElementById("selectDateForm").submit();
+        };
+
+        function DeleteModel(type, dataId) 
+        {
+            if (type == "Sales") {
+                var titleMsg = "Do you want to remove this Sale Invoice?";
+            }
+            else if (type == "SaleItem") {
+                var titleMsg = "Do you want to remove this Sale Item?";
+            }
+            else if (type == "Dispatch") {
+                var titleMsg = "Do you want to remove this Dispatch Item?";
+            }
+
+            Swal.fire({
+                title: titleMsg,
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Sales/DeleteSale?type=" + type + "&dataId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                if (type == "Sales") {
+                                    location.href = "/Sales/SalesList";
+                                }
+                                else if (type == "SaleItem") {
+                                    location.reload(true);
+                                }
+                                else if (type == "Dispatch") {
+                                    GetDispatchList(document.getElementById('invoiceId').value);
+                                }
+                            }
+                        });
+                    }
+                });
+        };
+
+    </script>
+}

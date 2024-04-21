@@ -1,0 +1,44 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewXero
+
+@{
+    Layout = null;
+}
+
+@if (Model.responseLogList.Count > 0)
+{
+    @foreach (var log in Model.responseLogList)
+    {
+        <tr @if(log.Result.Equals("Warning")){ @Html.Raw("class='bg-yellow disabled color-palette'")}else if(log.Result.Equals("Failed")){ @Html.Raw("class='bg-red disabled color-palette'")}>
+            <td>@log.Target</td>
+            <td>@log.InvoiceId</td>
+            <td>@log.Type</td>
+            <td>@log.Result</td>
+            
+            @if(!string.IsNullOrEmpty(log.ErrorNumber))
+            {
+                <td>@log.ErrorNumber</td>
+            }
+            else
+            {
+                <td></td>
+            }
+
+            @if(!string.IsNullOrEmpty(log.ErrorDescription))
+            {
+                <td>@log.ErrorDescription</td>
+            }
+            else
+            {
+                <td></td>
+            }
+
+            <td>@log.ExportedOn.Value.ToString("dd/MM/yyyy hh:mm:ss tt")</td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+       <td colspan="7"> No records for the selected period.</td>
+    </tr>
+}

@@ -1,0 +1,194 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewAdvanced
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Period List";
+    Layout = "_Layout";
+}
+ 
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+ 
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header py-2">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label>Periods : </label>
+                        <select class="form-select" OnChange="GetPeriod(this.value);">
+                            @foreach (var item in Model.endDateList)
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <a class="btn rounded-pill btn-label-primary" asp-action="NewPeriod" asp-controller="Advanced">New Period</a>
+                        </div>
+                    </div>
+                    <div class="col-sm-5"></div>
+                    <div class="col-sm-2 pull-right">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                     <div class="col-md-12">
+                        <table id="dataTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">ID</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Start<br />Date</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">End<br />Date</th>
+                                    <th class="col-lg-2 col-md-2 col-sm-2">Status</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="dataTBody">
+                                @foreach (var item in Model.periodList)
+                                {
+                                    <tr id="clsBtn_@item.Id">
+                                        <td>@item.Id</td>
+                                        <td>@item.StartDate.Value.ToString("dd/MM/yy")</td>
+                                        <td>@item.EndDate.Value.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                        @if (item.Status.Equals("Open"))
+                                        {
+                                            <td>
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" OnChange="periodActive(this.checked, '@item.EndDate.Value.ToString("dd/MM/yy")');" checked />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span> 
+                                                </label>
+                                            </td>
+                                        }
+                                        else if (item.Status.Equals("Closed"))
+                                        {
+                                            <td>
+                                                <label class="switch switch-lg mt-4">
+                                                    <input type="checkbox" class="switch-input" onchange="periodActive(this.checked, '@item.EndDate.Value.ToString("dd/MM/yy")');"  />
+                                                    <span class="switch-toggle-slider">
+                                                        <span class="switch-on"></span>
+                                                        <span class="switch-off"></span>
+                                                    </span>
+                                                </label>
+                                            </td>
+                                        }
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="editId" />
+
+@section PageScripts
+{
+    <script>
+        //Menu Active
+        MenuActive("", "Advanced", "PeriodList");
+
+        $(document).ready(function () 
+        {
+            //Data Table
+            var datatable = $('#dataTable').DataTable({
+                order: [[0, 'desc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 150,
+                "dom": '<"top"i>rt<"bottom"><"clear">'
+            });
+
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+        });
+
+        function GetPeriod(periodDate) 
+        {
+            $.ajax({
+                type: "POST",
+                url: "/Advanced/GetPeriod?period=" + periodDate,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                    var btnId = "clsBtn_" + response;
+                    document.getElementById(btnId).focus();
+
+                    focusTr(btnId);
+                }
+            });
+        };
+
+        function periodActive(checkVal, endDate) 
+        {
+            if (checkVal) {
+                Swal.fire({
+                    title: "Do you want to open this Period?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Advanced/ActivePeriod?type=open&endDate=" + endDate,
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+            }
+            else {
+                Swal.fire({
+                    title: "Do you want to close this Period?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Advanced/ActivePeriod?type=close&endDate=" + endDate,
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                location.reload(true);
+                            }
+                        });
+
+                    }
+                });
+            }
+        };
+
+    </script>
+}
+

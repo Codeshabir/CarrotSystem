@@ -1,0 +1,287 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewPurchase
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "Purchase List";
+    Layout = "_Layout";
+}
+
+<!-- Content Header (Page header) -->
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+    @ViewBag.Title
+</h4>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+
+                <form asp-action="SelectedPurchaseList" asp-controller="Purchases" method="POST" id="selectForm" class="form-horizontal">
+
+                    <div class="row">
+                        <div class="col-md-2 mb-4">
+                            <label>Supplier</label>
+                            <select asp-for="supplier" class="form-control">
+                                <option value="All">All</option>
+                                @foreach (var item in Model.supplierList)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-1 mb-4">
+                            <label>Status</label>
+                            <select asp-for="status" class="form-control">
+                                <option value="All">All</option>
+                                <option value="Exported">Exported</option>
+                                <option value="Invoice">Invoice</option>
+                                <option value="OnHold">OnHold</option>
+                                <option value="Order">Order</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-1 mb-4">
+                            <label>Type</label>
+                            <select asp-for="type" class="form-control">
+                                <option value="All">All</option>
+                                @foreach (var item in Model.typeList)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 mb-4">
+                            <label for="strDateFrom" class="form-label">Date From</label>
+                            <input asp-for="strDateFrom" id="datePickerFrom" type="text" class="form-control" value="@Model.dateFrom.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                        </div>
+
+                        <div class="col-md-2 mb-4">
+                            <label for="strDateTo" class="form-label">Date To</label>
+                            <input asp-for="strDateTo" id="datePickerTo" type="text" class="form-control" value="@Model.dateTo.ToString("dd/MM/yyyy")" placeholder="dd/mm/yyyy" />
+                        </div>
+
+
+                        <div class="col-md-2 mb-4">
+                            @if (Model.isShowAll.Equals("Yes"))
+                            {
+                                <label class="switch switch-lg mt-4">
+                                    <input type="checkbox" class="switch-input" onchange="ToggleShowAll(this.checked);" checked />
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">Show All</span>
+                                </label>
+                                <input type="hidden" asp-for="isShowAll" value="Yes" id="showAll" />
+                            }
+                            else
+                            {
+                                <label class="switch switch-lg mt-4">
+                                    <input type="checkbox" class="switch-input" onchange="ToggleShowAll(this.checked);" />
+                                    <span class="switch-toggle-slider">
+                                        <span class="switch-on"></span>
+                                        <span class="switch-off"></span>
+                                    </span>
+                                    <span class="switch-label">Show All</span>
+                                </label>
+                                <input type="hidden" asp-for="isShowAll" value="No" id="showAll" />
+                            }
+                        </div>
+
+                        <div class="col-md-2 mb-4">
+                            <button type="button" class="btn rounded-pill btn-label-primary mt-4" OnClick="sendDataForm();">
+                                <i class="menu-icon tf-icons bx bx-search-alt"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="searchText" placeholder="Search ...">
+                        </div>
+                    </div>
+                    <div class="col-md-8"></div>
+                    <div class="col-md-2">
+                        <a class="btn rounded-pill btn-label-primary" asp-action="PurchaseDetails" asp-route-id="New">
+                            New Purchase
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="dt-purchaseList" class="table table-hover table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Purchase<br />ID</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Delivery<br />Date</th>
+                            <th class="col-lg-2 col-md-2 col-sm-2">Supplier</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">SupInvoice<br />Number</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Total</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Type</th>
+                            <th class="col-lg-2 col-md-2 col-sm-2">Comment</th>
+                            <th class="col-lg-1 col-md-1 col-sm-1">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model.purchaseViewList)
+                        {
+                            if (item.Status.Contains("Deleted"))
+                            {
+                                <tr class="bg-danger color-palette">
+                                    <td class="text-white">@item.InvoiceId</td>
+                                    <td class="text-white">@item.DeliveryDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-white">@item.Company</td>
+                                    <td class="text-white">@item.CompanyNo</td>
+                                    <td class="text-white">@String.Format("{0:$ 0.###}", item.Total)</td>
+                                    <td class="text-white">@item.Status</td>
+                                    <td class="text-white">@item.Type</td>
+                                    <td class="text-white">@item.Comment</td>
+                                    <td></td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr ondblclick="ViewDetails('@item.InvoiceId');">
+                                    <td>@item.InvoiceId</td>
+                                    <td>@item.DeliveryDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Company</td>
+                                    <td>@item.CompanyNo</td>
+                                    <td>@String.Format("{0:$ 0.###}", item.Total)</td>
+                                    <td>@item.Status</td>
+                                    <td>@item.Type</td>
+                                    <td>@item.Comment</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-icon btn-primary" id="viewBtn_@item.InvoiceId" asp-action="PurchaseDetails" asp-route-id="@item.InvoiceId"><i class="fa fa-search"></i></a>
+                                            <a class="btn btn-icon btn-warning" id="copyBtn_@item.InvoiceId" asp-action="DuplicatePurchase" asp-route-id="@item.InvoiceId"><i class="fa fa-clone"></i></a>
+                                            <button type="button" class="btn btn-icon btn-danger" Onclick="DeleteModel('Purchases', @item.InvoiceId);"><i class="fa fa-trash"></i></button>
+                                        </div> 
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+@section PageScripts
+    {
+    <script>
+        //Menu Active
+        MenuActive("", "Purchases", "PurchaseList");
+
+        $(document).ready(function () {
+
+            //Data Table
+            var dataTable = $('#dt-purchaseList').DataTable({
+                'responsive': true,
+                order: [[0, 'desc']],
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': false,
+                'autoWidth': true,
+                'displayLength': 100
+            });
+
+            $('#dt-purchaseList_filter').empty();
+            $('#searchText').on('keyup', function () {
+                dataTable.search($('#searchText').val()).draw();
+            });
+
+        });
+
+        //Date picker From
+        $('#datePickerFrom').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        //Date picker To
+        $('#datePickerTo').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+
+        function DeleteModel(type, dataId) 
+        {
+            if (type == "Purchases") {
+                var titleMsg = "Do you want to remove this Purchase?";
+            }
+            else if (type == "PurchaseItem") {
+                var titleMsg = "Do you want to remove this Purchase Item?";
+            }
+
+            Swal.fire({
+                title: titleMsg,
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Purchases/DeletePurchase?type=" + type + "&dataId=" + eval(dataId),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                if (type == "Purchases") {
+                                    location.href = "/Purchases/PurchaseList";
+                                }
+                                else if (type == "PurchaseItem") {
+                                    location.reload(true);
+                                }
+                            }
+                        });
+
+                    }
+                });
+        };
+
+        function ViewDetails(dataId) {
+            var btnId = "viewBtn_" + dataId;
+            document.getElementById(btnId).click();
+
+        };
+
+        function ToggleShowAll(checkVal) {
+            if (checkVal) {
+                document.getElementById('showAll').value = "Yes";
+            }
+            else {
+                document.getElementById('showAll').value = "No";
+            }
+
+            document.getElementById('selectForm').submit();
+        };
+
+        function sendDataForm() {
+            document.getElementById('selectForm').submit();
+        };
+    </script>
+}
+

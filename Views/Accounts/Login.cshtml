@@ -1,0 +1,85 @@
+﻿@*@model CarrotSystem.Models.MPS.User
+
+@{
+    ViewBag.Title = "Login";
+    Layout = "_Layout_login";
+}
+
+<div class="authentication-inner row m-0">
+    <!-- /Left Text -->
+    <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center">
+        <div class="flex-row text-center mx-auto">
+            <img src="~/theme/theme01/img/pages/5031659.png"
+                 alt="Auth Cover Bg color"
+                 width="800"
+                 class="img-fluid authentication-cover-img"
+                 data-app-light-img="pages/5031659.png"
+                 data-app-dark-img="pages/5031659.png" />
+            <div class="mx-auto">
+                <h3>Power to automate your business</h3>
+                <p>
+                    Streamlining operations, boosting efficiency, and driving growth.
+                </p>
+            </div>
+        </div>
+    </div> 
+    <!-- /Left Text --> 
+    <!-- Login -->
+    <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg p-sm-5 p-4">
+        <div class="w-px-400 mx-auto"> 
+            <!-- /Logo -->
+            <img class="img-responsive mb-3" width="100%" src="~/images/mercorella_AK-02.png" />
+
+            @if (!string.IsNullOrEmpty(ViewBag.message))
+            { 
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <h6 class="alert-heading mb-1"><i class="bx bx-xs bx-store align-top me-2"></i>Notice!</h6>
+                    <span>@ViewBag.message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form id="formAuthentication" class="mb-3" asp-action="Login" asp-controller="Accounts" method="POST">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Username</label>
+                    <input type="text"
+                           class="form-control"  
+                           id="loginid" 
+                           name="loginid"
+                           placeholder="Please Enter Login ID"
+                           autofocus
+                           required
+                           tabindex="1"/>
+                </div>
+                <div class="mb-3 form-password-toggle">
+                    <div class="d-flex justify-content-between">
+                        <label class="form-label" for="password">Password</label>
+                        <a href="@Url.Action("ForgotPassword","Accounts")">
+                            <small>Forgot Password?</small>
+                        </a>
+                    </div>
+                    <div class="input-group input-group-merge">
+                        <input type="password"
+                               id="password"
+                               class="form-control"
+                               name="password"
+                               placeholder="Please Enter the password"
+                               aria-describedby="password" 
+                               tabindex="2"/>
+                        <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberme" name="rememberme" tabindex="3" />
+                        <label class="form-check-label" for="rememberme"> Remember Me </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-grid w-100" tabindex="4">Sign in</button>
+            </form>
+ 
+        </div>
+    </div>
+    <!-- /Login -->
+</div>
+  *@

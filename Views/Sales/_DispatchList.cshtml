@@ -1,0 +1,50 @@
+﻿@model CarrotSystem.Models.ViewModel.DispatchViewModel
+
+@{
+    Layout = null;
+}
+
+@if (Model.dispatchItemList.Count > 0)
+{
+    @foreach (var item in Model.dispatchItemList)
+    {
+        <tr>
+            <td>@item.SortId</td>
+            <td>
+                <span name="DisMercCode">@item.ProductCode</span>
+                <span name="DisCompCode">@item.CustomerCode</span>
+            </td>
+            <td>
+                <span name="DisMercDesc">@item.ProductDesc</span>
+                <span name="DisCompDesc">@item.CustomerDesc</span>
+            </td>
+            <td>
+                @item.Ordered
+            </td>
+            <td>
+                @item.Unfilled
+            </td>
+            <td>
+                @if(Model.isClosed)
+                {
+                    <input type="text" class="form-control" value="@item.Dispatch" disabled/>
+                }
+                else
+                {
+                    <input type="text" id="disQty_@item.DispatchItemId" class="form-control" value="@item.Dispatch" OnChange="ChangeItem('Qty', @item.DispatchItemId, this.value);" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');"/>
+                }
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+       <td></td>
+    </tr>
+}
+
+

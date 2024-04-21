@@ -1,0 +1,464 @@
+﻿@model CarrotSystem.Models.ViewModel.ViewXero
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccess
+
+@{
+    ViewBag.Title = "XERO Export List";
+    Layout = "_Layout";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header" id="moveTop">
+    <h1>
+        @ViewBag.Title
+    </h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <partial name="_Partial_Loading" />
+
+            <!-- Default box -->
+            <div class="box">
+                <div class="box-header">
+                    <div class="col-lg-1 col-md-3 col-sm-3 form-group">
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-default" id="expSaleBtn" OnClick="ExportToXero('Sales');" disabled>Export Sales</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 form-group">
+                        <label>&nbsp;</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-default" id="expPurchaseBtn" OnClick="ExportToXero('Purchases');" disabled>Export Purchases</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="col-lg-3 col-md-3 col-sm-3">
+                        <table id="listTable" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period End Date</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Status</th>
+                                    <th class="col-lg-1 col-md-1 col-sm-1">Period Id</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listTBody">
+                                    @foreach(var item in Model.periodList)
+                                    {
+                                    <tr id="clsTr_@item.PeriodId" onclick="GetDataTable('@item.TargetDate.ToString("ddMMyyyy")', @item.PeriodId)">
+                                        <td>@item.TargetDate.ToString("dd/MM/yy")</td>
+                                        <td>@item.Status</td>
+                                        <td>@item.PeriodId</td>
+                                    </tr>
+                                    }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Period List -->
+                    <div class="col-lg-9 col-md-9 col-sm-9">
+                        <div class="nav-tabs-custom">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#response_tab" data-toggle="tab">Response</a></li>
+                                <li><a href="#sales_tab" data-toggle="tab">Sales</a></li>
+                                <li><a href="#purchases_tab" data-toggle="tab">Purchases</a></li>
+                                <li class="pull-right"><p id="targetDate" style="vertical-align:middle;"></p></li>
+                                <li class="pull-right">Period End Date : </li>
+                            </ul> 
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="response_tab">
+                                    <table id="responseTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Target</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Type</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Result</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Error</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Error Description</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Exported On</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="responseTBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane" id="sales_tab">
+                                    <table id="salesTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Sale Date</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Co Last Name</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Item No.</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesTBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane" id="purchases_tab">
+                                    <table id="purchasesTable" class="table table-hover table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Invoice ID</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Purchase Date</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Co Last Name</th>
+                                                <th class="col-lg-3 col-md-3 col-sm-3">Item No.</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Qty</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Price</th>
+                                                <th class="col-lg-1 col-md-1 col-sm-1">Tax</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="purchasesTBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        
+                </div>
+                    
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+
+            <div id="moveDown"></div>
+            <!-- Buttons Scroll Moving-->
+        <partial name="_Partial_MoveScroll" />
+        </div>
+        <!-- /.col -->
+</div>
+<!-- /.row -->
+
+    <input type="hidden" id="exportDate" />
+
+    <div class="modal fade" id="modal-progress-bar">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span id="myBar">0%</span>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-green" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 40%" id="prg-bar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+</section>
+<!-- /.content -->
+<!-- page script -->
+<!-- Data Table -->
+<script src="~/js/dataTables.buttons.js"></script>
+<script src="~/js/buttons.bootstrap.min.js"></script>
+<script src="~/js/jszip.min.js"></script>
+<script src="~/js/pdfmake.min.js"></script>
+<script src="~/js/vfs_fonts.js"></script>
+<script src="~/js/buttons.print.min.js"></script>
+<script src="~/js/buttons.colVis.min.js"></script>
+<script src="~/js/buttons.html5.js"></script>
+<script src="~/js/dataTables.rowGroup.min.js"></script>
+<!-- bootstrap time picker -->
+<script src="~/js/bootstrap-timepicker.js"></script>
+<!-- bootstrap datepicker -->
+<script src="~/js/bootstrap-datepicker.min.js"></script>
+<script src="~/js/numeric-comma.js"></script>
+<!-- Data Moment Function -->
+<script src="~/js/moment.min.js"></script>
+<script src="~/js/datetime-moment.js"></script>
+
+<script>
+//Menu Active
+MenuActive("", "Xero", "ExportTCC");
+
+$(document).ready(function () {
+
+    $.fn.dataTable.moment('DD/MM/YY');
+
+    //list Table
+    $('#listTable').DataTable({
+        order: [[0, 'desc'], [2, 'desc']],
+        'paging': false,
+        'lengthChange': false,
+        'searching': false,
+        'ordering': true,
+        'info': false,
+        'autoWidth': true,
+        'displayLength' : 20
+    });
+
+    //Data Table
+    $('#responseTable').DataTable({
+        order: [[1, 'desc']],
+        'paging': false,
+        'lengthChange': false,
+        'searching': false,
+        'ordering': true,
+        'info': false,
+        'autoWidth': true,
+        'displayLength' : 150
+    });
+
+    @if(!string.IsNullOrEmpty(Model.focusDate))
+    {
+        @Html.Raw("GetDataTable('" + Model.focusDate + "', " + Model.focusId + ")");
+    }
+
+    //setTimeout(() => { document.getElementById(btnId).focus(); }, 1000);
+});
+
+//Loading Page
+$(function () {
+    $("#loadingPage").fadeOut();
+});
+
+function GetDataTable(target, btnId)
+{
+    focusTr(btnId);
+
+    $("#loadingPage").fadeIn();
+
+    let year = target.split('')[4] + target.split('')[5] + target.split('')[6] + target.split('')[7];
+    let month = target.split('')[2] + target.split('')[3];
+    let day = target.split('')[0] + target.split('')[1];
+    let targetDate = day + "/" + month + "/" + year;
+
+    document.getElementById('targetDate').innerHTML = targetDate;
+    document.getElementById('exportDate').value = target;
+    
+    ExportButtonToggle(false);
+
+    var responseUrl = "/Xero/GetExportResponseList?target=" + target;
+    $.get(responseUrl, function (data) {
+        $('#responseTBody').html(data);
+    });
+
+    var salesUrl = "/Xero/GetExportSalesList?target=" + target;
+    $.get(salesUrl, function (data) {
+        $('#salesTBody').html(data);
+    });
+
+    var purchasesUrl = "/Xero/GetExportPurchasesList?target=" + target;
+    $.get(purchasesUrl, function (data) {
+        $('#purchasesTBody').html(data);
+    });
+
+    $("#loadingPage").fadeOut();
+};
+
+function ExportToXero(type)
+{
+    var maxWidth = 100;
+    var exportDate = document.getElementById('exportDate').value;
+
+    $.ajax({
+            type: "POST",
+            url: "/Xero/GetExportCount?type=" + type + "&exportDate=" + exportDate + "",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+                console.log("Max Width : " + response);
+                maxWidth = response * 1000;
+
+                loadingBar(5, maxWidth);
+            }
+    });
+
+    //$("#loadingPage").fadeIn();
+
+    $.ajax({
+            type: "POST",
+            url: "/Xero/ExportToXero?type=" + type + "&exportDate=" + exportDate + "",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+
+                $('#modal-progress-bar').modal('hide');
+
+                var extCount = response.split("_")[1];
+                var errCount = response.split("_")[2];
+
+                swal({
+                    title: "Exported : " + extCount + ", Failed : " + errCount,
+                    icon: "success",
+                    buttons: "Okay",
+                    dangerMode: false,
+                    })
+                    .then((willDelete) => {
+                        if (willDelete)
+                        {
+                            location.reload(true);
+                        }
+                    });
+
+                //location.reload(true);
+            }
+    });
+};
+
+function ClearRecords(type) 
+{
+    $("#loadingPage").fadeIn();
+
+    var exportDate = document.getElementById('exportDate').value;
+
+    $.ajax({
+            type: "POST",
+            url: "/Xero/ClearRecords?type=Purchases&exportDate=" + exportDate + "",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) 
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "/MYOB/ClearRecords?type=Sales&exportDate=" + exportDate + "",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        location.reload(true);
+                    }
+                });
+            }
+    });
+};
+
+function ExportButtonToggle(val)
+{
+    document.getElementById('expSaleBtn').disabled = val;
+    document.getElementById('expPurchaseBtn').disabled = val;
+};
+
+function emptyDataTables()
+{
+    emptyResponseTable();
+    emptySalesTable();
+    emptyPurchasesTable();
+};
+
+function emptyResponseTable()
+{
+    var tbody = document.getElementById('responseTBody');
+    var rowMax = document.getElementById('responseTBody').rows.length;
+
+    for (i = rowMax-1; i >= 0; i--)
+    {
+        tbody.deleteRow(i);
+    }
+};
+
+function emptySalesTable()
+{
+    var tbody = document.getElementById('salesTBody');
+    var rowMax = document.getElementById('salesTBody').rows.length;
+
+    for (i = rowMax-1; i >= 0; i--)
+    {
+        tbody.deleteRow(i);
+    }
+};
+
+function emptyPurchasesTable()
+{
+    var tbody = document.getElementById('purchasesTBody');
+    var rowMax = document.getElementById('purchasesTBody').rows.length;
+
+    for (i = rowMax-1; i >= 0; i--)
+    {
+        tbody.deleteRow(i);
+    }
+};
+
+function emptyHighlight()
+{
+    var tbody = document.getElementById('listTBody').children;
+    var rowNum = document.getElementById('listTBody').children.length;
+
+    for (i = 0; i < rowNum; i++)
+        tbody[i].className = '';
+};
+
+function focusTr(btnId)
+{
+    var focusTrId = "clsTr_" + btnId;
+
+    emptyHighlight();
+
+    //console.log("Hilight : #" + focusTrId);
+
+    var tr = document.getElementById(focusTrId);
+    tr.className = 'bg-gray-active color-palette';
+};
+
+function loadingBar(interVal, max)
+{
+    //console.log("Interval : " + interVal + ", Max : " + max);
+    
+    $('#modal-progress-bar').modal({backdrop: 'static', keyboard: false});
+    $('#modal-progress-bar').modal('show');
+
+    let i = 0;
+
+    if (i == 0) {
+    i = 1;
+    let elem = document.getElementById("myBar");
+    let bar = document.getElementById("prg-bar");
+
+    let width = interVal;
+
+    if(max == 0)
+    {
+        width = 0;
+    }
+
+    let id = setInterval(frame, interVal);
+    
+    function frame() 
+    {
+            if (width > max) 
+            {
+                clearInterval(id);
+                i = 0;
+                
+            }
+            else if (width == max) {
+                $('#modal-progress-bar').modal('hide');
+
+                elem.style.width = "100%";
+                elem.innerHTML = "Exported : 100%";
+
+                $('#prg-bar').attr('aria-valuenow', Math.round(100)).css('width', '100%');
+            }
+            else 
+            {
+                width++;
+                
+                let perWidth = (width / max) * 100;
+
+                elem.style.width = Math.round(perWidth, 2) + "%";
+                elem.innerHTML = "Exported : " + Math.round(perWidth, 2) + " %";
+
+                $('#prg-bar').attr('aria-valuenow', Math.round(perWidth, 2)).css('width', Math.round(perWidth, 2) + '%');
+
+                //console.log("Width : " + perWidth);
+            }
+        }
+    };
+};
+
+</script>
